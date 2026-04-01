@@ -3,7 +3,23 @@
 {% block content %}
 
 <h2 style="margin-bottom:15px;">Cargar Resultados</h2>
+<form action="/admin/reset_results" method="post"
+      onsubmit="return confirm('¿Borrar TODOS los resultados cargados?');"
+      style="margin-bottom:15px;">
 
+    <button style="
+        width:100%;
+        padding:10px;
+        border:none;
+        border-radius:6px;
+        background:#ff4d4d;
+        color:white;
+        font-weight:bold;
+    ">
+        🗑️ Borrar todos los resultados
+    </button>
+
+</form>
 <div style="display:flex; flex-direction:column; gap:12px;">
 
 {% for m in matches %}

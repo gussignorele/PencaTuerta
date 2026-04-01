@@ -14,7 +14,6 @@
     <input type="password" name="password" placeholder="Password" required minlength="8"
            style="width:100%; padding:12px; margin-bottom:12px; border-radius:6px; border:none; font-size:16px; box-sizing:border-box;">
 
-
     <!-- telefono -->
     <input type="text" name="telefono" placeholder="Celular" required
            style="width:100%; padding:12px; margin-bottom:15px; border-radius:6px; border:none; font-size:16px; box-sizing:border-box;">
@@ -23,27 +22,28 @@
     <div style="margin-bottom:10px;">Elegí un avatar:</div>
 
     <div style="
-    display:grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap:12px;
-    margin-bottom:15px;
-">
+        display:grid;
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        gap:12px;
+        margin-bottom:15px;
+        justify-items:center;
+    ">
 
-        {% for tipo, img in [
-    ('m', 'default_m.png'),
-    ('f', 'default_f.png'),
-    ('f2', 'default_f_dark.png'),
-    ('nb', 'default_nb.png')
-] %}
+    {% for tipo, img in [
+        ('m', 'default_m.png'),
+        ('f', 'default_f.png'),
+        ('f2', 'default_f_dark.png'),
+        ('m_old', 'default_m_old.png'),
+        ('f_old', 'default_f_old.png'),
+        ('nb', 'default_nb.png')
+    ] %}
 
         <label class="avatar-card">
             <input type="radio" name="avatar_tipo" value="{{tipo}}" {% if loop.first %}checked{% endif %} hidden>
-
             <img src="/static/img/{{img}}" width="70">
-
         </label>
 
-        {% endfor %}
+    {% endfor %}
 
     </div>
 
@@ -84,6 +84,8 @@
     display:flex;
     justify-content:center;
     align-items:center;
+    width:90px;
+    height:90px;
 }
 
 /* hover */

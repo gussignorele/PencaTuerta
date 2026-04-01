@@ -201,6 +201,7 @@ def register():
             flash("La contraseña debe tener al menos 8 caracteres", "error")
             return redirect("/register")
 
+        
         telefono = request.form.get("telefono")
 
         if not telefono or len(telefono) < 7:
@@ -215,10 +216,11 @@ def register():
         avatar_map = {
             "m": "default_m.png",
             "f": "default_f.png",
-            "f2": "default_f_dark.png",  # 👈 NUEVO
+            "f2": "default_f_dark.png",
+            "m_old": "default_m_old.png",
+            "f_old": "default_f_old.png",
             "nb": "default_nb.png"
         }
-
         avatar = avatar_map.get(avatar_tipo, "default_m.png")
 
         file = request.files.get("avatar_file")
@@ -536,19 +538,22 @@ def admin_results():
         gl = request.form.get("goles_local")
         gv = request.form.get("goles_visitante")
 
-        # 🔥 evitar error si vienen vacíos
-        if gl != "" and gv != "":
-            gl = int(gl)
-            gv = int(gv)
+        if gl == "" or gv == "":
+            flash("Ingresá ambos goles", "error")
+            conn.close()
+            return redirect("/admin/results")
 
-            cursor.execute("""
-                UPDATE matches
-                SET goles_local=?, goles_visitante=?
-                WHERE id=?
-            """, (gl, gv, match_id))
+        gl = int(gl)
+        gv = int(gv)
 
-            conn.commit()
-            recalcular_ranking()
+        cursor.execute("""
+            UPDATE matches
+            SET goles_local=?, goles_visitante=?
+            WHERE id=?
+        """, (gl, gv, match_id))
+
+        conn.commit()
+        recalcular_ranking()
 
     cursor.execute("SELECT * FROM matches ORDER BY fecha_hora")
     matches = cursor.fetchall()
@@ -562,7 +567,30 @@ def admin_results():
         logos=logos
     )
 
+@app.route("/admin/reset_results", methods=["POST"])
+def reset_results():
+    if not is_admin():
+        return redirect("/admin/login")
 
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE matches
+        SET goles_local = NULL,
+            goles_visitante = NULL
+    """)
+
+    conn.commit()
+
+    # 🔥 CLAVE
+    recalcular_ranking()
+
+    conn.close()
+
+    flash("Resultados borrados", "success")
+
+    return redirect("/admin/results")
 # =========================
 # LOGOUT
 # =========================
