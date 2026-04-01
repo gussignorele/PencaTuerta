@@ -76,11 +76,7 @@
 </div>
 {% endif %}
 
-{% if m[7] is not none and m[8] is not none %}
-<div style="text-align:center; margin-top:5px;">
-    👤 {{m[7]}} - {{m[8]}}
-</div>
-{% endif %}
+
 
 <form action="/predict" method="post" style="margin-top:10px;">
     <input type="hidden" name="match_id" value="{{m[0]}}">
@@ -103,7 +99,8 @@
                    name="pred_local"
                    min="0"
                    value="{{ m[7] if m[7] is not none else '' }}"
-                   style="width:50px; text-align:center;">
+                   style="width:50px; text-align:center;"
+            class="{% if m[7] is not none %}filled{% endif %}">
 
             <button type="button" onclick="change('{{m[0]}}_l', 1)">+</button>
         </div>
@@ -119,7 +116,8 @@
                    name="pred_visitante"
                    min="0"
                    value="{{ m[8] if m[8] is not none else '' }}"
-                   style="width:50px; text-align:center;">
+                   style="width:50px; text-align:center;"
+            class="{% if m[8] is not none %}filled{% endif %}">
 
             <button type="button" onclick="change('{{m[0]}}_v', 1)">+</button>
         </div>

@@ -201,7 +201,7 @@ def register():
             flash("La contraseña debe tener al menos 8 caracteres", "error")
             return redirect("/register")
 
-        
+
         telefono = request.form.get("telefono")
 
         if not telefono or len(telefono) < 7:
@@ -366,6 +366,8 @@ def predict():
 # =========================
 @app.route("/ranking")
 def ranking():
+    if "user" not in session:
+        return redirect("/")
     conn = get_db()
     cursor = conn.cursor()
 
