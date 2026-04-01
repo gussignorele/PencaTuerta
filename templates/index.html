@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div style="
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:80vh;
+">
+
+<div style="
+    background:#6c3bb8;
+    padding:30px;
+    border-radius:12px;
+    width:90%;
+    max-width:320px;
+    text-align:center;
+">
+
+    <img src="/static/img/dsc.png" width="70"><br><br>
+
+    <h2>Penca 🟣</h2>
+
+    <form method="post">
+        <input type="text" name="username" placeholder="Usuario" required
+               style="width:100%; margin-bottom:12px; padding:12px; border-radius:6px; border:none; font-size:16px;">
+
+        <input type="password" name="password" placeholder="Password" required
+               style="width:100%; margin-bottom:12px; padding:12px; border-radius:6px; border:none; font-size:16px;">
+
+        <button type="submit" style="
+            width:100%;
+            padding:12px;
+            border:none;
+            border-radius:6px;
+            background:white;
+            color:#5a2a83;
+            font-weight:bold;
+            font-size:16px;
+        ">
+            Entrar
+        </button>
+    </form>
+
+    <br>
+
+    <a href="/register" style="color:white;">Crear cuenta</a>
+
+</div>
+
+</div>
+
+{% endblock %}

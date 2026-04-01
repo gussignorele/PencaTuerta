@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 style="margin-bottom:15px;">Crear cuenta</h2>
+
+<form method="post" enctype="multipart/form-data">
+
+    <!-- usuario -->
+    <input type="text" name="username" placeholder="Usuario" required
+           style="width:100%; padding:12px; margin-bottom:12px; border-radius:6px; border:none; font-size:16px; box-sizing:border-box;">
+
+    <!-- password -->
+    <input type="password" name="password" placeholder="Password" required minlength="8"
+           style="width:100%; padding:12px; margin-bottom:12px; border-radius:6px; border:none; font-size:16px; box-sizing:border-box;">
+
+
+    <!-- telefono -->
+    <input type="text" name="telefono" placeholder="Celular" required
+           style="width:100%; padding:12px; margin-bottom:15px; border-radius:6px; border:none; font-size:16px; box-sizing:border-box;">
+
+    <!-- elegir avatar -->
+    <div style="margin-bottom:10px;">Elegí un avatar:</div>
+
+    <div style="
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap:12px;
+    margin-bottom:15px;
+">
+
+        {% for tipo, img in [
+    ('m', 'default_m.png'),
+    ('f', 'default_f.png'),
+    ('f2', 'default_f_dark.png'),
+    ('nb', 'default_nb.png')
+] %}
+
+        <label class="avatar-card">
+            <input type="radio" name="avatar_tipo" value="{{tipo}}" {% if loop.first %}checked{% endif %} hidden>
+
+            <img src="/static/img/{{img}}" width="70">
+
+        </label>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- upload -->
+    <div style="margin-bottom:5px;">O subí tu imagen:</div>
+
+    <input type="file" name="avatar_file" accept="image/*"
+           style="margin-bottom:15px; width:100%; box-sizing:border-box;">
+
+    <!-- submit -->
+    <button type="submit" style="
+        width:100%;
+        padding:12px;
+        border:none;
+        border-radius:6px;
+        background:white;
+        color:#5a2a83;
+        font-weight:bold;
+        font-size:16px;
+    ">
+        Registrarse
+    </button>
+
+</form>
+
+<br>
+
+<a href="/" style="color:white;">Volver</a>
+
+<!-- 🎨 ESTILOS -->
+<style>
+.avatar-card {
+    cursor:pointer;
+    padding:10px;
+    border-radius:12px;
+    background:#5a2a83;
+    transition: all 0.25s ease;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* hover */
+.avatar-card:hover {
+    transform: scale(1.08);
+    background:#6c3bb8;
+}
+
+/* imagen */
+.avatar-card img {
+    border-radius:50%;
+    transition: all 0.25s ease;
+}
+
+/* seleccionado */
+.avatar-card.selected {
+    background:white;
+}
+
+.avatar-card.selected img {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 3px #5a2a83;
+}
+</style>
+
+<!-- 🧠 JS selección -->
+<script>
+const cards = document.querySelectorAll('.avatar-card');
+const radios = document.querySelectorAll('input[name="avatar_tipo"]');
+
+function updateSelection() {
+    cards.forEach((card, i) => {
+        card.classList.remove('selected');
+        if (radios[i].checked) {
+            card.classList.add('selected');
+        }
+    });
+}
+
+cards.forEach((card, i) => {
+    card.addEventListener('click', () => {
+        radios[i].checked = true;
+        updateSelection();
+    });
+});
+
+// inicial
+updateSelection();
+</script>
+
+{% endblock %}

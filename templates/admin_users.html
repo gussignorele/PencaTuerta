@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Usuarios registrados</h2>
+
+<table border="1">
+  <tr>
+    <th>Usuario</th>
+    <th>Celular</th>
+  </tr>
+
+  {% for u in users %}
+  <tr>
+    <td>{{ u[0] }}</td>
+    <td>{{ u[1] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<br>
+<a href="/matches">Volver</a>
+
+{% endblock %}

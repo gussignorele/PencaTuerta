@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 style="margin-bottom:20px;">Panel Admin</h2>
+
+<div style="display:flex; flex-direction:column; gap:15px;">
+
+    <a href="/admin/matches" style="
+        background:#4a1f6b;
+        padding:18px;
+        border-radius:12px;
+        text-decoration:none;
+        color:white;
+        font-size:16px;
+        text-align:center;
+        font-weight:bold;
+    ">
+        ⚙️ Gestionar Partidos
+    </a>
+
+    <a href="/admin/results" style="
+        background:#4a1f6b;
+        padding:18px;
+        border-radius:12px;
+        text-decoration:none;
+        color:white;
+        font-size:16px;
+        text-align:center;
+        font-weight:bold;
+    ">
+        🏁 Cargar Resultados
+    </a>
+
+    <a href="/matches" style="
+        background:#ffffff;
+        padding:14px;
+        border-radius:12px;
+        text-decoration:none;
+        color:#4a1f6b;
+        font-size:14px;
+        text-align:center;
+        font-weight:bold;
+    ">
+        ← Volver a la app
+    </a>
+
+</div>
+
+<hr>
+
+<h3>Administrar usuarios</h3>
+
+{% for u in users %}
+{% set username = u if u is string else u[0] %}
+
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+    padding:10px;
+    background:#4a1f6b;
+    border-radius:8px;
+">
+
+    <div style="font-weight:bold;">
+        {{username}}
+    </div>
+
+    {% if username != user %}
+    <form action="/admin/delete_user/{{username}}" method="post"
+          onsubmit="return confirm('¿Eliminar usuario {{username}}?');">
+
+        <button style="
+            background:#ff4d4d;
+            border:none;
+            padding:6px 12px;
+            border-radius:5px;
+            color:white;
+            font-weight:bold;
+            cursor:pointer;
+        ">
+            Eliminar
+        </button>
+
+    </form>
+    {% endif %}
+
+</div>
+{% endfor %}
+
+{% endblock %}

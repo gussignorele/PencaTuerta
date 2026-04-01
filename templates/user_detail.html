@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% block content %}
+
+<div style="text-align:center; margin-bottom:20px;">
+    <img src="/static/img/{{avatar}}" width="70" style="border-radius:50%; margin-bottom:8px;">
+    <h2 style="margin:5px 0;">{{username}}</h2>
+    <div style="color:#ddd;">⭐ {{total_puntos}} pts</div>
+</div>
+
+
+    <form method="get" style="text-align:center; margin-bottom:15px;">
+
+    <select name="fecha"
+            onchange="this.form.submit()"
+            style="padding:8px; border-radius:6px;">
+
+        {% for f in fechas %}
+            <option value="{{f}}" {% if fecha_sel == f %}selected{% endif %}>
+                Fecha {{f}}
+            </option>
+        {% endfor %}
+
+    </select>
+
+</form>
+
+    <div style="
+    text-align:center;
+    font-size:12px;
+    color:#ccc;
+    margin-bottom:10px;
+">
+    Mostrando Fecha {{fecha_sel}}
+</div>
+
+{% for r in rows %}
+<div style="
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:12px;
+
+    {% if r[6] == 3 %}
+        background:#d4edda; color:black;
+    {% elif r[6] == 1 %}
+        background:#fff3cd; color:black;
+    {% elif r[6] == 0 %}
+        background:#f8d7da; color:black;
+    {% else %}
+        background:#6c3bb8; color:white;
+    {% endif %}
+">
+
+    <!-- 🔥 equipos (igual que matches) -->
+    <div style="display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; text-align:center;">
+
+        <div>
+            <img src="/static/img/{{ logos.get(r[0], 'default.png') }}" width="28"><br>
+            <div style="margin-top:3px;">{{r[0]}}</div>
+        </div>
+
+        <div style="font-weight:bold;">vs</div>
+
+        <div>
+            <img src="/static/img/{{ logos.get(r[1], 'default.png') }}" width="28"><br>
+            <div style="margin-top:3px;">{{r[1]}}</div>
+        </div>
+
+    </div>
+
+    <!-- resultado real -->
+    <div style="text-align:center; margin-top:8px; font-weight:bold;">
+        🏁 {{r[2] if r[2] is not none else '-'}} - {{r[3] if r[3] is not none else '-'}}
+    </div>
+
+    <!-- predicción + puntos -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+
+        <div>
+            👤 {{r[4]}} - {{r[5]}}
+        </div>
+
+        {% if r[6] is not none %}
+<div style="
+    font-weight:bold;
+    font-size:16px;
+">
+    +{{r[6]}}
+</div>
+{% endif %}
+
+    </div>
+
+</div>
+{% endfor %}
+
+{% endblock %}
