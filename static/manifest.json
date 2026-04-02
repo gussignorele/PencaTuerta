@@ -1,0 +1,15 @@
+{
+  "name": "Penca Defensor Sporting",
+  "short_name": "Penca",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#6c3bb8",
+  "theme_color": "#6c3bb8",
+  "icons": [
+    {
+      "src": "/static/img/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
