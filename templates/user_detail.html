@@ -86,9 +86,13 @@
     <!-- predicción + puntos -->
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
 
-        <div>
-            👤 {{r[4]}} - {{r[5]}}
-        </div>
+       <div>
+    {% if r[7] %}
+        🔒
+    {% else %}
+        👤 {{r[4] if r[4] is not none else '-'}} - {{r[5] if r[5] is not none else '-'}}
+    {% endif %}
+</div>
 
         {% if r[6] is not none %}
 <div style="

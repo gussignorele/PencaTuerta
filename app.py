@@ -111,11 +111,12 @@ def user_detail(username):
     cursor.execute("SELECT DISTINCT fecha_num FROM matches ORDER BY fecha_num")
     fechas = [f[0] for f in cursor.fetchall()]
 
-    # 🔥 traer SOLO esa fecha
+    # 🔥 traer SOLO esa fecha (AGREGAMOS fecha_hora)
     cursor.execute("""
         SELECT m.local, m.visitante,
                m.goles_local, m.goles_visitante,
-               p.pred_local, p.pred_visitante
+               p.pred_local, p.pred_visitante,
+               m.fecha_hora
         FROM prediction p
         JOIN matches m ON p.match_id = m.id
         WHERE p.user = ?
@@ -125,14 +126,32 @@ def user_detail(username):
 
     rows = cursor.fetchall()
 
-    # puntos
+    # 🔥 ahora
+    from datetime import datetime
+    now = datetime.now()
+
+    usuario_logueado = session.get("user")
+
     rows_con_puntos = []
     for r in rows:
-        pts = calcular_puntos(r[2], r[3], r[4], r[5]) if r[2] is not None else None
-        rows_con_puntos.append((*r, pts))
+        local, visitante, gl, gv, pl, pv, fecha_hora = r
+
+        # 🔒 ocultar si no empezó y no es el mismo usuario
+        oculto = False
+        if fecha_hora and fecha_hora > now and username != usuario_logueado:
+            pl, pv = None, None
+            oculto = True
+
+        pts = calcular_puntos(gl, gv, pl, pv) if gl is not None else None
+
+        rows_con_puntos.append(
+            (local, visitante, gl, gv, pl, pv, pts, oculto)
+        )
 
     conn.close()
-    total_puntos = sum(p for *_, p in rows_con_puntos if p is not None)
+
+    total_puntos = sum(p for *_, p, _ in rows_con_puntos if p is not None)
+
     return render_template(
         "user_detail.html",
         rows=rows_con_puntos,
