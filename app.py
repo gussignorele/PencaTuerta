@@ -324,7 +324,8 @@ def matches(fecha_sel=None):
         fecha_actual=fecha_actual,
         min_fecha=min_fecha,
         max_fecha=max_fecha,
-        fecha_max_permitida=fecha_max_permitida
+        fecha_max_permitida=fecha_max_permitida,
+        now=datetime.now().isoformat()
     )
 
 
@@ -339,12 +340,33 @@ def predict():
     user = session["user"]
     match_id = int(request.form["match_id"])
 
-    pred_local = int(request.form.get("pred_local") or 0)
-    pred_visitante = int(request.form.get("pred_visitante") or 0)
+    pl = request.form.get("pred_local")
+    pv = request.form.get("pred_visitante")
+
+    # ❌ evitar guardar vacíos como 0
+    if pl == "" or pv == "":
+        flash("Ingresá ambos goles", "error")
+        return redirect(request.referrer or "/matches")
+
+    pred_local = int(pl)
+    pred_visitante = int(pv)
 
     conn = get_db()
     cursor = conn.cursor()
 
+    # 🔒 BLOQUEO: no permitir si el partido ya empezó
+    cursor.execute("SELECT fecha_hora FROM matches WHERE id=?", (match_id,))
+    row = cursor.fetchone()
+
+    if row:
+        fecha_partido = datetime.fromisoformat(row[0])
+
+        if datetime.now() >= fecha_partido:
+            conn.close()
+            flash("El partido ya comenzó", "error")
+            return redirect(request.referrer or "/matches")
+
+    # guardar predicción
     cursor.execute("""
         UPDATE prediction
         SET pred_local=?, pred_visitante=?
@@ -435,6 +457,7 @@ def delete_user(username):
 
     flash(f"Usuario {username} eliminado", "success")
     return redirect("/admin")  # o donde estés
+
 @app.route("/admin/matches", methods=["GET", "POST"])
 def admin_matches():
     if not is_admin():
