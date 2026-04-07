@@ -4,14 +4,12 @@
     <link rel="manifest" href="/static/manifest.json">
     <meta name="theme-color" content="#6c3bb8">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-startup-image" href="/static/img/splash.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="/static/img/icon.png">
-    <title>Penca DSC</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-startup-image" href="/static/img/splash.png">
+    <link rel="apple-touch-icon" href="/static/img/icon.png">
 
+    <title>Penca DSC</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
@@ -31,19 +29,53 @@
             color: #080;
         }
 
-input[type="number"].filled {
-    border: 2px solid #28a745 !important;
-    background-color: #eaffea;
-}
-
+        input[type="number"].filled {
+            border: 2px solid #28a745 !important;
+            background-color: #eaffea;
+        }
     </style>
-
 </head>
 
 <body style="background:#5a2a83; color:white; font-family:sans-serif; margin:0;">
 
-<!-- HEADER APP -->
+<!-- 🔥 BANNER INSTALACIÓN (empuja contenido) -->
+<div id="installBanner" style="
+    display:none;
+    width:100%;
+    background:#6c3bb8;
+    color:white;
+    padding:12px;
+    text-align:center;
+">
 
+    <span style="margin-right:10px;">
+        📱 Instalá la app para una mejor experiencia
+    </span>
+
+    <button onclick="instalarApp()" style="
+        background:white;
+        color:#6c3bb8;
+        border:none;
+        padding:6px 12px;
+        border-radius:6px;
+        font-weight:bold;
+        margin-right:10px;
+    ">
+        Instalar
+    </button>
+
+    <button onclick="cerrarBanner()" style="
+        background:transparent;
+        border:none;
+        color:white;
+        font-size:16px;
+    ">
+        ✕
+    </button>
+
+</div>
+
+<!-- HEADER -->
 <div style="
     display:flex;
     align-items:center;
@@ -52,13 +84,11 @@ input[type="number"].filled {
     background:#4a1f6b;
 ">
 
-    <!-- izquierda -->
     <div style="display:flex; align-items:center; gap:10px;">
         <img src="/static/img/dsc.png" width="35">
         <b style="font-size:16px;">Penca DSC</b>
     </div>
 
-    <!-- derecha -->
     {% if user %}
     <div style="display:flex; align-items:center; gap:10px;">
         <span style="font-size:14px;">{{user}}</span>
@@ -76,12 +106,10 @@ input[type="number"].filled {
         </a>
     </div>
     {% endif %}
-
 </div>
 
 <!-- CONTENIDO -->
-
-<div style="padding:15px; padding-bottom:90px;">
+<div style="padding:15px 15px 90px 15px;">
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -94,11 +122,9 @@ input[type="number"].filled {
     {% endwith %}
 
     {% block content %}{% endblock %}
-
 </div>
 
-<!-- MENU PRINCIPAL -->
-
+<!-- MENU -->
 <div style="
     position: fixed;
     bottom: 0;
@@ -110,57 +136,57 @@ input[type="number"].filled {
     border-top:1px solid #ccc;
 ">
 
-    <a href="/matches" style="
-        text-align:center;
-        text-decoration:none;
-        color:#4a1f6b;
-        font-size:20px;
-        flex:1;
-    ">
-        🏠<br>
-        <span style="font-size:12px;">Partidos</span>
+    <a href="/matches" style="text-align:center; text-decoration:none; color:#4a1f6b; font-size:20px; flex:1;">
+        🏠<br><span style="font-size:12px;">Partidos</span>
     </a>
 
-    <a href="/ranking" style="
-        text-align:center;
-        text-decoration:none;
-        color:#4a1f6b;
-        font-size:20px;
-        flex:1;
-    ">
-        🏆<br>
-        <span style="font-size:12px;">Ranking</span>
+    <a href="/ranking" style="text-align:center; text-decoration:none; color:#4a1f6b; font-size:20px; flex:1;">
+        🏆<br><span style="font-size:12px;">Ranking</span>
     </a>
 
     {% if session.get("is_admin") %}
-
-    <a href="/admin" style="
-        text-align:center;
-        text-decoration:none;
-        color:#4a1f6b;
-        font-size:20px;
-        flex:1;
-    ">
-        ⚙️<br>
-        <span style="font-size:12px;">Admin</span>
+    <a href="/admin" style="text-align:center; text-decoration:none; color:#4a1f6b; font-size:20px; flex:1;">
+        ⚙️<br><span style="font-size:12px;">Admin</span>
     </a>
-
     {% else %}
-
-    <a href="/admin/login" style="
-        text-align:center;
-        text-decoration:none;
-        color:#4a1f6b;
-        font-size:20px;
-        flex:1;
-    ">
-        🔒<br>
-        <span style="font-size:12px;">Admin</span>
+    <a href="/admin/login" style="text-align:center; text-decoration:none; color:#4a1f6b; font-size:20px; flex:1;">
+        🔒<br><span style="font-size:12px;">Admin</span>
     </a>
-
     {% endif %}
 
 </div>
+
+<!-- 🔥 JS INSTALACIÓN -->
+<script>
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+
+    if (localStorage.getItem("hideInstallBanner") === "true") {
+        return;
+    }
+
+    deferredPrompt = e;
+    document.getElementById("installBanner").style.display = "block";
+});
+
+function instalarApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+
+        deferredPrompt.userChoice.then(() => {
+            deferredPrompt = null;
+            document.getElementById("installBanner").style.display = "none";
+        });
+    }
+}
+
+function cerrarBanner() {
+    document.getElementById("installBanner").style.display = "none";
+    localStorage.setItem("hideInstallBanner", "true");
+}
+</script>
 
 </body>
 </html>
