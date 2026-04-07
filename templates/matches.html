@@ -177,7 +177,7 @@ document.querySelectorAll('form[action="/predict"]').forEach(form => {
 });
 
 let guardando = false;
-const now = "{{ now }}";
+const now = new Date("{{ now }}");
 
 function guardarTodos() {
 
@@ -206,7 +206,7 @@ function guardarTodos() {
         if (
             local !== "" &&
             visitante !== "" &&
-            now < fecha &&
+            now < new Date(fecha) &&
             tieneResultado == "0" &&
             (
                 local != valoresIniciales[matchId].local ||
@@ -221,7 +221,13 @@ function guardarTodos() {
             );
         }
     });
-
+    if (promises.length === 0) {
+        status.innerText = "ℹ️ No hay cambios para guardar";
+        boton.disabled = false;
+        boton.innerText = "Guardar todos";
+        guardando = false;
+        return;
+    }
     Promise.all(promises)
         .then(() => {
             status.innerText = "✅ Guardado";

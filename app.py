@@ -99,19 +99,18 @@ def user_detail(username):
     row = cursor.fetchone()
     avatar = row[0] if row else "default_m.png"
 
-    # 🔥 fecha seleccionada
+    # fecha seleccionada
     fecha_sel = request.args.get("fecha", type=int)
 
-    # 🔥 si no viene → última fecha
     if not fecha_sel:
         cursor.execute("SELECT MAX(fecha_num) FROM matches")
         fecha_sel = cursor.fetchone()[0]
 
-    # 🔥 lista de fechas (para dropdown)
+    # lista de fechas
     cursor.execute("SELECT DISTINCT fecha_num FROM matches ORDER BY fecha_num")
     fechas = [f[0] for f in cursor.fetchall()]
 
-    # 🔥 traer SOLO esa fecha (AGREGAMOS fecha_hora)
+    # traer datos
     cursor.execute("""
         SELECT m.local, m.visitante,
                m.goles_local, m.goles_visitante,
@@ -126,19 +125,27 @@ def user_detail(username):
 
     rows = cursor.fetchall()
 
-    # 🔥 ahora
     from datetime import datetime
     now = datetime.now()
 
     usuario_logueado = session.get("user")
 
     rows_con_puntos = []
+
     for r in rows:
         local, visitante, gl, gv, pl, pv, fecha_hora = r
 
-        # 🔒 ocultar si no empezó y no es el mismo usuario
+        # 🔥 FIX: convertir a datetime
+        fecha_dt = None
+        if fecha_hora:
+            try:
+                fecha_dt = datetime.fromisoformat(fecha_hora)
+            except:
+                fecha_dt = None  # por si viene raro
+
+        # ocultar si no empezó
         oculto = False
-        if fecha_hora and fecha_hora > now and username != usuario_logueado:
+        if fecha_dt and fecha_dt > now and username != usuario_logueado:
             pl, pv = None, None
             oculto = True
 
@@ -427,12 +434,28 @@ def ranking():
     ]
 
     ranking = sorted(ranking, key=lambda x: (-x[2], x[0]))
+    from datetime import datetime
+
+    now = datetime.now()
+
+    cursor.execute("SELECT MAX(fecha_hora) FROM matches")
+    ultima_fecha = cursor.fetchone()[0]
+
+    fecha_jugada = False
+
+    if ultima_fecha:
+        try:
+            fecha_dt = datetime.fromisoformat(ultima_fecha)
+            fecha_jugada = now > fecha_dt
+        except:
+            fecha_jugada = False
 
     return render_template(
         "ranking.html",
         ranking=ranking,
         current_user=session.get("user"),
-        user=session.get("user")
+        user=session.get("user"),
+        fecha_jugada=fecha_jugada  # 👈 NUEVO
     )
 
 # =========================
