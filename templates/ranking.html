@@ -16,7 +16,14 @@
 
     {% if ganador_fecha %}
     <div style="margin-top:5px;">
-        🏆 Ganador: <b>{{ganador_fecha}}</b>
+            {% if ganador_fecha %}
+<div style="margin-top:5px;">
+    🏆 Ganador:
+    {% for g in ganador_fecha %}
+        <b>{{g}}</b>{% if not loop.last %}, {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
     </div>
     {% endif %}
 </div>

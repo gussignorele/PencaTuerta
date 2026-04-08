@@ -500,10 +500,15 @@ def ranking():
 
     pts_fecha = {u: pts for u, pts in cursor.fetchall()}
 
-    # 🔹 ganador
     ganador_fecha = None
+
     if pts_fecha:
-        ganador_fecha = max(pts_fecha.items(), key=lambda x: x[1])[0]
+        max_puntos = max(pts_fecha.values())
+
+        if max_puntos > 0:
+            ganador_fecha = [
+                u for u, pts in pts_fecha.items() if pts == max_puntos
+            ]
 
     conn.close()  # 🔥 ahora sí, al final
 
