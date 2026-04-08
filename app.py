@@ -345,8 +345,7 @@ def matches(fecha_sel=None):
     """, (user, fecha_actual))
 
     matches_data = cursor.fetchall()
-    matches_data = cursor.fetchall()
-
+   
     conn.close()
 
     return render_template(
