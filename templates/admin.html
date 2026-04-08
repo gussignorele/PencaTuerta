@@ -64,10 +64,13 @@
     border-radius:8px;
 ">
 
-    <div style="font-weight:bold;">
-        {{username}}
-    </div>
-
+<a href="/user/{{username}}?fecha={{fecha_sel}}"  style="
+    font-weight:bold;
+    color:white;
+    text-decoration:none;
+">
+    {{username}} 👁️
+</a>
     {% if username != user %}
     <form action="/admin/delete_user/{{username}}" method="post"
           onsubmit="return confirm('¿Eliminar usuario {{username}}?');">

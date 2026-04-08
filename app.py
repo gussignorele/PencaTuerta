@@ -8,7 +8,9 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "super-secret-key-key"
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "database.db")
+DB_PATH = "/data/database.db" if os.path.exists("/data") else "database.db"
+
+
 UPLOAD_FOLDER = os.path.join("static", "img")
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -132,6 +134,8 @@ def user_detail(username):
 
     usuario_logueado = session.get("user")
 
+    es_admin = session.get("is_admin")
+
     rows_con_puntos = []
 
     for r in rows:
@@ -147,7 +151,7 @@ def user_detail(username):
 
         # ocultar si no empezó
         oculto = False
-        if fecha_dt and fecha_dt > now and username != usuario_logueado:
+        if fecha_dt and fecha_dt > now and username != usuario_logueado and not es_admin:
             pl, pv = None, None
             oculto = True
 
@@ -340,6 +344,7 @@ def matches(fecha_sel=None):
         ORDER BY m.fecha_hora
     """, (user, fecha_actual))
 
+    matches_data = cursor.fetchall()
     matches_data = cursor.fetchall()
 
     conn.close()
@@ -539,12 +544,19 @@ def admin():
     cursor.execute("SELECT username FROM users ORDER BY username")
     users = [u[0] for u in cursor.fetchall()]
 
-    conn.close()
 
+    fecha_sel = request.args.get("fecha", type=int)
+
+    if not fecha_sel:
+        cursor.execute("SELECT MAX(fecha_num) FROM matches")
+        fecha_sel = cursor.fetchone()[0]
+
+    conn.close()
     return render_template(
         "admin.html",
         user=session.get("user"),
-        users=users
+        users=users,
+        fecha_sel=fecha_sel  # 👈
     )
 
 @app.route("/admin/delete_user/<username>", methods=["POST"])
