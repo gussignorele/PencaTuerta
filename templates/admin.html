@@ -92,5 +92,20 @@
 
 </div>
 {% endfor %}
+<form method="POST" action="/admin/reset_scores"
+      onsubmit="return confirm('¿Seguro que querés resetear todos los puntajes?')">
 
+    <button style="
+        background:#ff4d4d;
+        color:white;
+        border:none;
+        padding:10px 15px;
+        border-radius:6px;
+        font-weight:bold;
+        margin-top:15px;
+    ">
+        🔥 Resetear puntajes
+    </button>
+
+</form>
 {% endblock %}

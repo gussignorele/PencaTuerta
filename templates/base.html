@@ -175,18 +175,57 @@
 <!-- 🔥 JS INSTALACIÓN -->
 <script>
 let deferredPrompt;
+let bannerHTMLOriginal;
 
+// 📱 Detectar si ya está instalada
+function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+}
+
+// 📱 Detectar iPhone
+function isIOS() {
+    return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+}
+
+// Mostrar banner manual (fallback)
+function mostrarBannerManual() {
+    if (localStorage.getItem("hideInstallBanner") === "true") return;
+
+    const banner = document.getElementById("installBanner");
+
+    // 🔥 restaurar contenido original SIEMPRE
+    banner.innerHTML = bannerHTMLOriginal;
+
+    banner.style.display = "block";
+
+    // Cambiar texto si es iPhone
+    if (isIOS()) {
+        banner.innerHTML = `
+            <span style="margin-right:10px;">
+                📱 En iPhone: tocar compartir ⬆️ y "Agregar a pantalla de inicio"
+            </span>
+            <button onclick="cerrarBanner()" style="
+                background:transparent;
+                border:none;
+                color:white;
+                font-size:16px;
+            ">✕</button>
+        `;
+    }
+}
+
+// Evento oficial (Android / Chrome)
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
 
-    if (localStorage.getItem("hideInstallBanner") === "true") {
-        return;
-    }
+    if (isStandalone()) return;
+    if (localStorage.getItem("hideInstallBanner") === "true") return;
 
     deferredPrompt = e;
     document.getElementById("installBanner").style.display = "block";
 });
 
+// Botón instalar
 function instalarApp() {
     if (deferredPrompt) {
         deferredPrompt.prompt();
@@ -195,13 +234,32 @@ function instalarApp() {
             deferredPrompt = null;
             document.getElementById("installBanner").style.display = "none";
         });
+    } else {
+        mostrarBannerManual();
     }
 }
 
+// Cerrar banner
 function cerrarBanner() {
     document.getElementById("installBanner").style.display = "none";
     localStorage.setItem("hideInstallBanner", "true");
 }
+
+// 🔥 INIT
+window.addEventListener("load", () => {
+    const banner = document.getElementById("installBanner");
+
+    // 🔥 guardar HTML original
+    bannerHTMLOriginal = banner.innerHTML;
+
+    if (!isStandalone()) {
+        setTimeout(() => {
+            if (!deferredPrompt) {
+                mostrarBannerManual();
+            }
+        }, 1500);
+    }
+});
 </script>
 
 </body>

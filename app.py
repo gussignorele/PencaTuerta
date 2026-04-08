@@ -265,20 +265,29 @@ def register():
         conn = get_db()
         cursor = conn.cursor()
 
+        telefono = telefono.strip()
+
+        # 🔒 teléfono único
+        cursor.execute("SELECT 1 FROM users WHERE telefono = ?", (telefono,))
+        if cursor.fetchone():
+            conn.close()
+            flash("Ese teléfono ya está registrado", "error")
+            return redirect("/register")
+
         try:
             cursor.execute(
                 "INSERT INTO users (username, password, avatar, telefono) VALUES (?, ?, ?, ?)",
                 (username, hashed_password, avatar, telefono)
             )
 
-            # 🔥 CREAR SCORE AUTOMÁTICO
             cursor.execute(
                 "INSERT INTO scores (user, puntos) VALUES (?, 0)",
                 (username,)
             )
 
             conn.commit()
-        except:
+
+        except sqlite3.IntegrityError:
             conn.close()
             flash("El usuario ya existe", "error")
             return redirect("/register")
@@ -360,7 +369,21 @@ def matches(fecha_sel=None):
         now=datetime.now().isoformat()
     )
 
+@app.route("/admin/reset_scores", methods=["POST"])
+def reset_scores():
+    if not is_admin():
+        return redirect("/admin/login")
 
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE scores SET puntos = 0")
+
+    conn.commit()
+    conn.close()
+
+    flash("Puntajes reseteados", "success")
+    return redirect("/admin")
 # =========================
 # PREDICT
 # =========================
