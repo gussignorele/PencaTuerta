@@ -3,6 +3,55 @@
 {% block content %}
 
 <h2 style="margin-bottom:15px;">Ranking 🏆</h2>
+    <div style="
+    background:#4a1f6b;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:15px;
+">
+
+    <div style="text-align:center; font-weight:bold; margin-bottom:8px;">
+        🏆 Fecha {{fecha_sel}}
+        {% if fecha_estado == "Finalizada" %}
+            🟢
+        {% else %}
+            🟡
+        {% endif %}
+    </div>
+
+    <!-- TOP 3 -->
+    {% for u, pts in top3_fecha %}
+    <div style="display:flex; justify-content:space-between; padding:4px 0;">
+        <div>
+            {% if loop.index == 1 %}🥇
+            {% elif loop.index == 2 %}🥈
+            {% elif loop.index == 3 %}🥉
+            {% endif %}
+            <b>{{u}}</b>
+        </div>
+        <div><b>{{pts}} pts</b></div>
+    </div>
+    {% endfor %}
+
+    <!-- RESTO COLAPSADO -->
+    {% if resto_fecha %}
+    <details style="margin-top:8px;">
+        <summary style="cursor:pointer; text-align:center;">
+            ▼ Ver resto
+        </summary>
+
+        <div style="margin-top:8px;">
+            {% for u, pts in resto_fecha %}
+            <div style="display:flex; justify-content:space-between; padding:3px 0;">
+                <div>{{loop.index + 3}}. {{u}}</div>
+                <div>{{pts}} pts</div>
+            </div>
+            {% endfor %}
+        </div>
+    </details>
+    {% endif %}
+
+</div>
 <div style="text-align:center; margin-bottom:10px;">
     <h3>📅 Fecha {{fecha_sel}}</h3>
     <div style="font-size:13px; color:#ccc;">

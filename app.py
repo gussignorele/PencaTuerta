@@ -345,7 +345,7 @@ def matches(fecha_sel=None):
     """, (user, fecha_actual))
 
     matches_data = cursor.fetchall()
-   
+
     conn.close()
 
     return render_template(
@@ -503,6 +503,10 @@ def ranking():
     """, (fecha_sel,))
 
     pts_fecha = {u: pts for u, pts in cursor.fetchall()}
+    tabla_fecha = sorted(pts_fecha.items(), key=lambda x: -x[1])
+
+    top3_fecha = tabla_fecha[:3]
+    resto_fecha = tabla_fecha[3:]
 
     ganador_fecha = None
 
@@ -525,7 +529,10 @@ def ranking():
         pts_fecha=pts_fecha,
         ganador_fecha=ganador_fecha,
         fecha_estado=fecha_estado,
-        fecha_jugada=fecha_jugada
+        fecha_jugada=fecha_jugada,
+        tabla_fecha=tabla_fecha,
+        top3_fecha=top3_fecha,
+        resto_fecha=resto_fecha
     )
 
 # =========================
