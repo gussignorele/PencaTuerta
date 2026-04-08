@@ -3,7 +3,23 @@
 {% block content %}
 
 <h2 style="margin-bottom:15px;">Ranking 🏆</h2>
+<div style="text-align:center; margin-bottom:10px;">
+    <h3>📅 Fecha {{fecha_sel}}</h3>
+    <div style="font-size:13px; color:#ccc;">
+        Estado:
+        {% if fecha_estado == "Finalizada" %}
+            🟢 {{fecha_estado}}
+        {% else %}
+            🟡 {{fecha_estado}}
+        {% endif %}
+    </div>
 
+    {% if ganador_fecha %}
+    <div style="margin-top:5px;">
+        🏆 Ganador: <b>{{ganador_fecha}}</b>
+    </div>
+    {% endif %}
+</div>
 <div style="
     font-size:12px;
     color:#ccc;
@@ -101,7 +117,12 @@
         {% endif %}
 
         <!-- DERECHA (puntos) -->
-        <b style="font-size:16px;">{{pts}} pts</b>
+        <div style="text-align:right;">
+    <div><b>{{pts}} pts</b></div>
+    <div style="font-size:12px; color:#ddd;">
+        Fecha: {{ pts_fecha.get(user, 0) }} pts
+    </div>
+</div>
 
     </div>
 

@@ -231,18 +231,27 @@ function guardarTodos() {
     Promise.all(promises)
         .then(() => {
             status.innerText = "✅ Guardado";
+
+            // 🔥 aplicar verde
+            document.querySelectorAll('form[action="/predict"]').forEach(form => {
+                const inputLocal = form.querySelector('input[name="pred_local"]');
+                const inputVisitante = form.querySelector('input[name="pred_visitante"]');
+
+                if (inputLocal.value !== "") {
+                    inputLocal.classList.add("filled");
+                }
+
+                if (inputVisitante.value !== "") {
+                    inputVisitante.classList.add("filled");
+                }
+            });
+
             window.scrollTo({ top: 0, behavior: "smooth" });
 
-            setTimeout(() => status.innerText = "", 2000);
+            setTimeout(() => {
+                status.innerText = "";
+            }, 2000);
         })
-        .catch(() => {
-            status.innerText = "❌ Error al guardar";
-        })
-        .finally(() => {
-            boton.disabled = false;
-            boton.innerText = "Guardar todos";
-            guardando = false;
-        });
 }
 </script>
 

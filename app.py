@@ -13,7 +13,9 @@ UPLOAD_FOLDER = os.path.join("static", "img")
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-ADMIN_PASSWORD = "SilvaCantera14_"
+import os
+
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 
 
 def get_db():
@@ -416,46 +418,105 @@ def predict():
 def ranking():
     if "user" not in session:
         return redirect("/")
+
     conn = get_db()
     cursor = conn.cursor()
 
+    # 🔹 ranking general
     cursor.execute("""
         SELECT u.username, u.avatar, s.puntos
         FROM users u
         LEFT JOIN scores s ON u.username = s.user
     """)
-
     rows = cursor.fetchall()
-    conn.close()
 
     ranking = [
         (u, avatar, pts if pts is not None else 0)
         for u, avatar, pts in rows
     ]
-
     ranking = sorted(ranking, key=lambda x: (-x[2], x[0]))
-    from datetime import datetime
 
+    from datetime import datetime
     now = datetime.now()
 
+    # 🔹 saber si la fecha global terminó (lo que ya tenías)
     cursor.execute("SELECT MAX(fecha_hora) FROM matches")
     ultima_fecha = cursor.fetchone()[0]
 
     fecha_jugada = False
-
     if ultima_fecha:
         try:
             fecha_dt = datetime.fromisoformat(ultima_fecha)
             fecha_jugada = now > fecha_dt
         except:
-            fecha_jugada = False
+            pass
+
+    # 🔹 fecha seleccionada
+    fecha_sel = request.args.get("fecha", type=int)
+
+    if not fecha_sel:
+        cursor.execute("SELECT MAX(fecha_num) FROM matches")
+        fecha_sel = cursor.fetchone()[0]
+
+    # 🔹 estado de la fecha
+    cursor.execute("""
+        SELECT MAX(fecha_hora)
+        FROM matches
+        WHERE fecha_num = ?
+    """, (fecha_sel,))
+    fecha_max = cursor.fetchone()[0]
+
+    fecha_estado = "En juego"
+    if fecha_max:
+        try:
+            fecha_dt = datetime.fromisoformat(fecha_max)
+            if now > fecha_dt:
+                fecha_estado = "Finalizada"
+        except:
+            pass
+
+    # 🔹 puntos por fecha
+    pts_fecha = {}   # 🔥 IMPORTANTE (evita crash)
+
+    cursor.execute("""
+        SELECT p.user,
+               SUM(
+                   CASE
+                       WHEN m.goles_local IS NOT NULL THEN
+                           CASE
+                               WHEN m.goles_local = p.pred_local AND m.goles_visitante = p.pred_visitante THEN 3
+                               WHEN (m.goles_local - m.goles_visitante) *
+                                    (p.pred_local - p.pred_visitante) > 0 THEN 1
+                               ELSE 0
+                           END
+                       ELSE 0
+                   END
+               ) as pts
+        FROM prediction p
+        JOIN matches m ON p.match_id = m.id
+        WHERE m.fecha_num = ?
+        GROUP BY p.user
+    """, (fecha_sel,))
+
+    pts_fecha = {u: pts for u, pts in cursor.fetchall()}
+
+    # 🔹 ganador
+    ganador_fecha = None
+    if pts_fecha:
+        ganador_fecha = max(pts_fecha.items(), key=lambda x: x[1])[0]
+
+    conn.close()  # 🔥 ahora sí, al final
 
     return render_template(
         "ranking.html",
         ranking=ranking,
         current_user=session.get("user"),
         user=session.get("user"),
-        fecha_jugada=fecha_jugada  # 👈 NUEVO
+        fecha_sel=fecha_sel,
+        pts_fecha=pts_fecha,
+        ganador_fecha=ganador_fecha,
+        fecha_estado=fecha_estado,
+        fecha_jugada=fecha_jugada
     )
 
 # =========================
@@ -599,6 +660,9 @@ def admin_results():
     conn = get_db()
     cursor = conn.cursor()
 
+    # 🔥 fecha seleccionada
+    fecha_sel = request.args.get("fecha", type=int) or request.form.get("fecha", type=int)
+
     if request.method == "POST":
         match_id = request.form["match_id"]
 
@@ -608,7 +672,7 @@ def admin_results():
         if gl == "" or gv == "":
             flash("Ingresá ambos goles", "error")
             conn.close()
-            return redirect("/admin/results")
+            return redirect(f"/admin/results?fecha={fecha_sel}")
 
         gl = int(gl)
         gv = int(gv)
@@ -622,7 +686,21 @@ def admin_results():
         conn.commit()
         recalcular_ranking()
 
-    cursor.execute("SELECT * FROM matches ORDER BY fecha_hora")
+    # 🔥 lista de fechas
+    cursor.execute("SELECT DISTINCT fecha_num FROM matches ORDER BY fecha_num")
+    fechas = [f[0] for f in cursor.fetchall()]
+
+    # 🔥 si no viene → última fecha
+    if not fecha_sel:
+        cursor.execute("SELECT MAX(fecha_num) FROM matches")
+        fecha_sel = cursor.fetchone()[0]
+
+    # 🔥 traer SOLO esa fecha
+    cursor.execute("""
+        SELECT * FROM matches
+        WHERE fecha_num = ?
+        ORDER BY fecha_hora
+    """, (fecha_sel,))
     matches = cursor.fetchall()
 
     conn.close()
@@ -631,7 +709,9 @@ def admin_results():
         "admin_results.html",
         matches=matches,
         user=session.get("user"),
-        logos=logos
+        logos=logos,
+        fechas=fechas,
+        fecha_sel=fecha_sel
     )
 
 @app.route("/admin/reset_results", methods=["POST"])
@@ -656,8 +736,11 @@ def reset_results():
     conn.close()
 
     flash("Resultados borrados", "success")
-
-    return redirect("/admin/results")
+    fecha = request.form.get("fecha")
+    if fecha:
+        return redirect(f"/admin/results?fecha={fecha}")
+    else:
+        return redirect("/admin/results")
 # =========================
 # LOGOUT
 # =========================

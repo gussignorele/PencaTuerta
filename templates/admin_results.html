@@ -3,10 +3,35 @@
 {% block content %}
 
 <h2 style="margin-bottom:15px;">Cargar Resultados</h2>
+    <!-- 🔥 SELECTOR DE FECHA -->
+<form method="get" style="text-align:center; margin-bottom:15px;">
+
+    <select name="fecha"
+            onchange="this.form.submit()"
+            style="padding:8px; border-radius:6px;">
+
+        {% for f in fechas %}
+            <option value="{{f}}" {% if fecha_sel == f %}selected{% endif %}>
+                Fecha {{f}}
+            </option>
+        {% endfor %}
+
+    </select>
+
+</form>
+
+<div style="
+    text-align:center;
+    font-size:12px;
+    color:#ddd;
+    margin-bottom:10px;
+">
+    Mostrando Fecha {{fecha_sel}}
+</div>
 <form action="/admin/reset_results" method="post"
       onsubmit="return confirm('¿Borrar TODOS los resultados cargados?');"
       style="margin-bottom:15px;">
-
+<input type="hidden" name="fecha" value="{{fecha_sel}}">
     <button style="
         width:100%;
         padding:10px;
@@ -30,7 +55,7 @@
     border-radius:10px;
     padding:15px;
 ">
-
+<input type="hidden" name="fecha" value="{{fecha_sel}}">
     <input type="hidden" name="match_id" value="{{m[0]}}">
 
     <!-- EQUIPOS -->
