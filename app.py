@@ -10,12 +10,15 @@ app.secret_key = "super-secret-key-key"
 
 DB_PATH = "/data/database.db" if os.path.exists("/data") else "database.db"
 
-
-UPLOAD_FOLDER = os.path.join("static", "img")
+if os.path.exists("/data"):
+    UPLOAD_FOLDER = "/data/avatars"
+else:
+    UPLOAD_FOLDER = os.path.join("static", "img")
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-import os
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 
@@ -80,6 +83,13 @@ def init_db():
 
 init_db()
 
+from flask import send_from_directory
+
+@app.route('/avatars/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
+
 
 # =========================
 # HELPERS
@@ -101,7 +111,7 @@ def user_detail(username):
     # avatar
     cursor.execute("SELECT avatar FROM users WHERE username=?", (username,))
     row = cursor.fetchone()
-    avatar = row[0] if row else "default_m.png"
+    avatar = row[0] if row else "/static/img/default_m.png"
 
     # fecha seleccionada
     fecha_sel = request.args.get("fecha", type=int)
@@ -243,24 +253,23 @@ def register():
         avatar_tipo = request.form.get("avatar_tipo")
 
         hashed_password = generate_password_hash(password)
-        avatar = "default_m.png"
+        avatar = "/static/img/default_m.png"
 
         avatar_map = {
-            "m": "default_m.png",
-            "f": "default_f.png",
-            "f2": "default_f_dark.png",
-            "m_old": "default_m_old.png",
-            "f_old": "default_f_old.png",
-            "nb": "default_nb.png"
+            "m": "/static/img/default_m.png",
+            "f": "/static/img/default_f.png",
+            "f2": "/static/img/default_f_dark.png",
+            "m_old": "/static/img/default_m_old.png",
+            "f_old": "/static/img/default_f_old.png",
+            "nb": "/static/img/default_nb.png"
         }
-        avatar = avatar_map.get(avatar_tipo, "default_m.png")
-
+        avatar = avatar_map.get(avatar_tipo, "/static/img/default_m.png")
         file = request.files.get("avatar_file")
         if file and file.filename != "":
             filename = f"{username}.png"
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             file.save(filepath)
-            avatar = filename
+            avatar = f"/avatars/{filename}"
 
         conn = get_db()
         cursor = conn.cursor()

@@ -234,11 +234,39 @@ function instalarApp() {
             deferredPrompt = null;
             document.getElementById("installBanner").style.display = "none";
         });
+
     } else {
-        mostrarBannerManual();
+        // 🔥 ACA ESTÁ LA CLAVE
+        const banner = document.getElementById("installBanner");
+
+        if (isIOS()) {
+            banner.innerHTML = `
+                <span style="margin-right:10px;">
+                    📱 En iPhone: tocar compartir ⬆️ y "Agregar a pantalla de inicio"
+                </span>
+                <button onclick="cerrarBanner()" style="
+                    background:transparent;
+                    border:none;
+                    color:white;
+                    font-size:16px;
+                ">✕</button>
+            `;
+        } else {
+            banner.innerHTML = `
+                <span style="margin-right:10px;">
+                    ⚠️ Tu navegador no permite instalación automática.
+                    Buscá "Instalar app" o "Agregar a inicio" en el menú.
+                </span>
+                <button onclick="cerrarBanner()" style="
+                    background:transparent;
+                    border:none;
+                    color:white;
+                    font-size:16px;
+                ">✕</button>
+            `;
+        }
     }
 }
-
 // Cerrar banner
 function cerrarBanner() {
     document.getElementById("installBanner").style.display = "none";

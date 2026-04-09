@@ -152,11 +152,15 @@
                 {% elif loop.index == 3 %}🥉
                 {% endif %}
             </div>
+<img src="{{ avatar }}"
+     style="
+        width:40px;
+        height:40px;
+        object-fit:cover;
+        border-radius:50%;
+     ">
 
-            <!-- avatar -->
-            <img src="/static/img/{{ avatar if avatar else 'default_m.png' }}"
-                 width="40"
-                 style="border-radius:50%;">
+
 
             <!-- usuario -->
             <div>
