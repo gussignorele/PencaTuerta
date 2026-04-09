@@ -38,7 +38,7 @@
         ('nb', 'default_nb.png')
     ] %}
 
-        <label class="avatar-card">
+        <label class="avatar-card" data-img="/static/img/{{img}}">
             <input type="radio" name="avatar_tipo" value="{{tipo}}" {% if loop.first %}checked{% endif %} hidden>
             <img src="/static/img/{{img}}" width="70">
         </label>
@@ -50,8 +50,18 @@
     <!-- upload -->
     <div style="margin-bottom:5px;">O subí tu imagen:</div>
 
-    <input type="file" name="avatar_file" accept="image/*"
-           style="margin-bottom:15px; width:100%; box-sizing:border-box;">
+    <input type="file" name="avatar_file" accept="image/*" onchange="previewAvatar(event)">
+
+    <br><br>
+
+    <img id="avatarPreview" src="/static/img/default_m.png" style="
+        width:80px;
+        height:80px;
+        object-fit:cover;
+        border-radius:50%;
+        display:block;
+        margin:auto;
+    ">
 
     <!-- submit -->
     <button type="submit" style="
@@ -73,7 +83,6 @@
 
 <a href="/" style="color:white;">Volver</a>
 
-<!-- 🎨 ESTILOS -->
 <style>
 .avatar-card {
     cursor:pointer;
@@ -88,19 +97,16 @@
     height:90px;
 }
 
-/* hover */
 .avatar-card:hover {
     transform: scale(1.08);
     background:#6c3bb8;
 }
 
-/* imagen */
 .avatar-card img {
     border-radius:50%;
     transition: all 0.25s ease;
 }
 
-/* seleccionado */
 .avatar-card.selected {
     background:white;
 }
@@ -111,29 +117,50 @@
 }
 </style>
 
-<!-- 🧠 JS selección -->
 <script>
-const cards = document.querySelectorAll('.avatar-card');
-const radios = document.querySelectorAll('input[name="avatar_tipo"]');
+document.addEventListener("DOMContentLoaded", function() {
 
-function updateSelection() {
+    const cards = document.querySelectorAll('.avatar-card');
+    const radios = document.querySelectorAll('input[name="avatar_tipo"]');
+    const preview = document.getElementById("avatarPreview");
+
+    // actualizar selección visual + preview
+    function updateSelection() {
+        cards.forEach((card, i) => {
+            card.classList.remove('selected');
+            if (radios[i].checked) {
+                card.classList.add('selected');
+
+                // 🔥 actualizar preview con avatar elegido
+                preview.src = card.dataset.img;
+            }
+        });
+    }
+
+    // click en avatar
     cards.forEach((card, i) => {
-        card.classList.remove('selected');
-        if (radios[i].checked) {
-            card.classList.add('selected');
-        }
+        card.addEventListener('click', () => {
+            radios[i].checked = true;
+            updateSelection();
+        });
     });
-}
 
-cards.forEach((card, i) => {
-    card.addEventListener('click', () => {
-        radios[i].checked = true;
-        updateSelection();
-    });
+    // inicial
+    updateSelection();
+
+    // preview de archivo subido
+    window.previewAvatar = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        preview.src = URL.createObjectURL(file);
+
+        // 🔥 deseleccionar avatars
+        radios.forEach(r => r.checked = false);
+        cards.forEach(c => c.classList.remove('selected'));
+    };
+
 });
-
-// inicial
-updateSelection();
 </script>
 
 {% endblock %}
