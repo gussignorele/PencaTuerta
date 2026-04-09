@@ -270,8 +270,8 @@ def register():
         file = request.files.get("avatar_file")
 
         # 🔒 límite de tamaño (2MB)
-        MAX_SIZE = 2 * 1024 * 1024  # 2MB
-
+        #MAX_SIZE = 2 * 1024 * 1024  # 2MB
+        MAX_SIZE = 5 * 1024 * 1024  # 5MB
         if file and file.filename != "":
             file.seek(0, os.SEEK_END)
             file_length = file.tell()
@@ -307,7 +307,7 @@ def register():
 
             # 🔥 resize final (ej: 200x200)
             img = img.resize((200, 200), Image.LANCZOS)
-            
+
             # 🔥 guardar optimizado
             img.save(filepath, format="JPEG", quality=75, optimize=True)
 
