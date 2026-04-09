@@ -19,7 +19,6 @@
         {% endif %}
     </div>
 
-    <!-- TOP 3 -->
     {% for u, pts in top3_fecha %}
     <div style="display:flex; justify-content:space-between; padding:4px 0;">
         <div>
@@ -33,7 +32,6 @@
     </div>
     {% endfor %}
 
-    <!-- RESTO COLAPSADO -->
     {% if resto_fecha %}
     <details style="margin-top:8px;">
         <summary style="cursor:pointer; text-align:center;">
@@ -52,6 +50,7 @@
     {% endif %}
 
 </div>
+
 <div style="text-align:center; margin-bottom:10px;">
     <h3>📅 Fecha {{fecha_sel}}</h3>
     <div style="font-size:13px; color:#ccc;">
@@ -65,17 +64,14 @@
 
     {% if ganador_fecha %}
     <div style="margin-top:5px;">
-            {% if ganador_fecha %}
-<div style="margin-top:5px;">
-    🏆 Ganador:
-    {% for g in ganador_fecha %}
-        <b>{{g}}</b>{% if not loop.last %}, {% endif %}
-    {% endfor %}
-</div>
-{% endif %}
+        🏆 Ganador:
+        {% for g in ganador_fecha %}
+            <b>{{g}}</b>{% if not loop.last %}, {% endif %}
+        {% endfor %}
     </div>
     {% endif %}
 </div>
+
 <div style="
     font-size:12px;
     color:#ccc;
@@ -98,7 +94,6 @@
 
 {% for user, avatar, pts in ranking %}
 
-    <!-- 🔥 ESTE ES EL DIV IMPORTANTE -->
     <div class="{% if user == current_user or fecha_jugada %}unlock{% endif %}"
          style="
             padding:15px;
@@ -128,6 +123,7 @@
             padding:5px;
             border-radius:8px;
             transition: all 0.2s ease;
+            min-width:0;
         "
         onmouseover="this.style.background='#7c4dff'"
         onmouseout="this.style.background='transparent'"
@@ -142,6 +138,7 @@
             font-weight:bold;
             flex:1;
             padding:5px;
+            min-width:0;
         ">
         {% endif %}
 
@@ -152,18 +149,24 @@
                 {% elif loop.index == 3 %}🥉
                 {% endif %}
             </div>
-<img src="{{ avatar }}"
-     style="
-        width:40px;
-        height:40px;
-        object-fit:cover;
-        border-radius:50%;
-     ">
 
+            <!-- avatar (FIX COMPLETO) -->
+            <img src="{{ avatar if avatar.startswith('/') else '/static/img/' + avatar }}"
+                 style="
+                    width:40px;
+                    height:40px;
+                    object-fit:cover;
+                    border-radius:50%;
+                    flex-shrink:0;
+                 ">
 
-
-            <!-- usuario -->
-            <div>
+            <!-- usuario (FIX SCROLL) -->
+            <div title="{{user}}" style="
+                overflow:hidden;
+                text-overflow:ellipsis;
+                white-space:nowrap;
+                max-width:140px;
+            ">
                 {{user}}
                 {% if user != current_user and not fecha_jugada %}
                     <span style="font-size:12px;">🔒</span>
@@ -176,13 +179,13 @@
         </div>
         {% endif %}
 
-        <!-- DERECHA (puntos) -->
-        <div style="text-align:right;">
-    <div><b>{{pts}} pts</b></div>
-    <div style="font-size:12px; color:#ddd;">
-        Fecha: {{ pts_fecha.get(user, 0) }} pts
-    </div>
-</div>
+        <!-- DERECHA -->
+        <div style="text-align:right; flex-shrink:0;">
+            <div><b>{{pts}} pts</b></div>
+            <div style="font-size:12px; color:#ddd;">
+                Fecha: {{ pts_fecha.get(user, 0) }} pts
+            </div>
+        </div>
 
     </div>
 
