@@ -4,7 +4,8 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from lib import calcular_puntos, logos, recalcular_ranking
 from datetime import datetime
-
+from PIL import Image
+import io
 app = Flask(__name__)
 app.secret_key = "super-secret-key-key"
 
@@ -264,11 +265,52 @@ def register():
             "nb": "/static/img/default_nb.png"
         }
         avatar = avatar_map.get(avatar_tipo, "/static/img/default_m.png")
+
+
         file = request.files.get("avatar_file")
+
+        # 🔒 límite de tamaño (2MB)
+        MAX_SIZE = 2 * 1024 * 1024  # 2MB
+
         if file and file.filename != "":
-            filename = f"{username}.png"
+            file.seek(0, os.SEEK_END)
+            file_length = file.tell()
+            file.seek(0)
+
+            if file_length > MAX_SIZE:
+                flash("La imagen es demasiado grande (máx 2MB)", "error")
+                return redirect("/register")
+
+            filename = f"{username}.jpg"
             filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-            file.save(filepath)
+
+            # abrir imagen
+            try:
+                img = Image.open(file)
+            except:
+                flash("Archivo de imagen inválido", "error")
+                return redirect("/register")
+
+            # convertir a RGB
+            img = img.convert("RGB")
+
+            # 🔥 recorte cuadrado (centrado)
+            width, height = img.size
+            min_side = min(width, height)
+
+            left = (width - min_side) // 2
+            top = (height - min_side) // 2
+            right = (width + min_side) // 2
+            bottom = (height + min_side) // 2
+
+            img = img.crop((left, top, right, bottom))
+
+            # 🔥 resize final (ej: 200x200)
+            img = img.resize((200, 200), Image.LANCZOS)
+            
+            # 🔥 guardar optimizado
+            img.save(filepath, format="JPEG", quality=75, optimize=True)
+
             avatar = f"/avatars/{filename}"
 
         conn = get_db()
