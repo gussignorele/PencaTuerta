@@ -15,13 +15,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    * {
-        box-sizing: border-box;
-    }
-
-    body {
-        overflow-x: hidden;
-    }
+    * { box-sizing: border-box; }
+    body { overflow-x: hidden; }
 
     .unlock {
         animation: fadeIn 0.6s ease;
@@ -65,7 +60,6 @@
         background-color: #eaffea;
     }
 
-    /* 🔥 FIX REAL DEL BANNER */
     #installBanner {
         display: none;
         width: 100%;
@@ -75,14 +69,26 @@
         position: sticky;
         top: 0;
         z-index: 1000;
+        animation: slideDown 0.4s ease;
 
         display: flex;
-        flex-wrap: wrap;             /* 🔥 clave anti overflow */
+        flex-wrap: wrap;
         justify-content: center;
         align-items: center;
         gap: 8px;
 
         text-align: center;
+    }
+
+    @keyframes slideDown {
+        from {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
 </style>
 ```
@@ -91,15 +97,12 @@
 
 <body style="background:#5a2a83; color:white; font-family:sans-serif; margin:0;">
 
-<!-- 🔥 BANNER INSTALACIÓN -->
-
 <div id="installBanner">
+    <span style="flex:1 1 100%;">
+        📱 Instalá la app para una mejor experiencia
+    </span>
 
 ```
-<span style="flex:1 1 100%;">
-    📱 Instalá la app para una mejor experiencia
-</span>
-
 <button onclick="instalarApp()" style="
     background:white;
     color:#6c3bb8;
@@ -107,6 +110,7 @@
     padding:6px 12px;
     border-radius:6px;
     font-weight:bold;
+    margin-right:10px;
 ">
     Instalar
 </button>
@@ -123,22 +127,13 @@
 
 </div>
 
-<!-- HEADER -->
-
-<div style="
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:10px 15px;
-    background:#4a1f6b;
-">
+<div style="display:flex; align-items:center; justify-content:space-between; padding:10px 15px; background:#4a1f6b;">
+    <div style="display:flex; align-items:center; gap:10px;">
+        <img src="/static/img/dsc.png" width="35">
+        <b style="font-size:16px;">Penca DSC</b>
+    </div>
 
 ```
-<div style="display:flex; align-items:center; gap:10px;">
-    <img src="/static/img/dsc.png" width="35">
-    <b style="font-size:16px;">Penca DSC</b>
-</div>
-
 {% if user %}
 <div style="display:flex; align-items:center; gap:10px;">
     <span style="font-size:14px;">{{user}}</span>
@@ -160,44 +155,29 @@
 
 </div>
 
-<!-- CONTENIDO -->
-
 <div style="padding:15px 15px 90px 15px;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
 ```
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="flash {{ category }}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
-
 {% block content %}{% endblock %}
 ```
 
 </div>
 
-<!-- MENU -->
-
-<div style="
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: #ffffff;
-    display: flex;
-    justify-content: space-around;
-    padding: 10px 0;
-    border-top:1px solid #ccc;
-">
+<div style="position: fixed; bottom: 0; width: 100%; background: #ffffff; display: flex; justify-content: space-around; padding: 10px 0; border-top:1px solid #ccc;">
+    <a href="/matches" style="text-align:center; text-decoration:none; color:#4a1f6b; font-size:20px; flex:1;">
+        🏠<br><span style="font-size:12px;">Partidos</span>
+    </a>
 
 ```
-<a href="/matches" style="text-align:center; text-decoration:none; color:#4a1f6b; font-size:20px; flex:1;">
-    🏠<br><span style="font-size:12px;">Partidos</span>
-</a>
-
 <a href="/ranking" style="text-align:center; text-decoration:none; color:#4a1f6b; font-size:20px; flex:1;">
     🏆<br><span style="font-size:12px;">Ranking</span>
 </a>
@@ -214,8 +194,6 @@
 ```
 
 </div>
-
-<!-- 🔥 JS (igual que tenías) -->
 
 <script>
 let deferredPrompt = null;
@@ -286,6 +264,18 @@ window.addEventListener("load", () => {
         }
     }, 1200);
 });
+
+function togglePassword(inputId, el) {
+    const input = document.getElementById(inputId);
+
+    if (input.type === "password") {
+        input.type = "text";
+        el.textContent = "🙈";
+    } else {
+        input.type = "password";
+        el.textContent = "👁️";
+    }
+}
 </script>
 
 </body>
