@@ -15,6 +15,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        overflow-x: hidden;
+    }
+
     .unlock {
         animation: fadeIn 0.6s ease;
     }
@@ -57,29 +65,24 @@
         background-color: #eaffea;
     }
 
-    /* 🔥 banner más pro */
+    /* 🔥 FIX REAL DEL BANNER */
     #installBanner {
         display: none;
         width: 100%;
         background: #6c3bb8;
         color: white;
         padding: 12px;
-        text-align: center;
         position: sticky;
         top: 0;
         z-index: 1000;
-        animation: slideDown 0.4s ease;
-    }
 
-    @keyframes slideDown {
-        from {
-            transform: translateY(-100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        display: flex;
+        flex-wrap: wrap;             /* 🔥 clave anti overflow */
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+
+        text-align: center;
     }
 </style>
 ```
@@ -93,7 +96,7 @@
 <div id="installBanner">
 
 ```
-<span style="margin-right:10px;">
+<span style="flex:1 1 100%;">
     📱 Instalá la app para una mejor experiencia
 </span>
 
@@ -104,7 +107,6 @@
     padding:6px 12px;
     border-radius:6px;
     font-weight:bold;
-    margin-right:10px;
 ">
     Instalar
 </button>
@@ -213,54 +215,39 @@
 
 </div>
 
-<!-- 🔥 JS INSTALACIÓN -->
+<!-- 🔥 JS (igual que tenías) -->
 
 <script>
 let deferredPrompt = null;
-let bannerHTMLOriginal;
 
-// detectar standalone
 function isStandalone() {
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 }
 
-// detectar iOS
 function isIOS() {
     return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 }
 
-// mostrar ayuda manual
 function mostrarBannerManual() {
     const banner = document.getElementById("installBanner");
 
     if (isIOS()) {
         banner.innerHTML = `
-            <span style="margin-right:10px;">
-                📱 En iPhone: tocar compartir ⬆️ y "Agregar a pantalla de inicio"
+            <span style="flex:1 1 100%;">
+                📱 En iPhone: compartir ⬆️ → "Agregar a pantalla de inicio"
             </span>
-            <button onclick="cerrarBanner()" style="
-                background:transparent;
-                border:none;
-                color:white;
-                font-size:16px;
-            ">✕</button>
+            <button onclick="cerrarBanner()" style="background:transparent;border:none;color:white;">✕</button>
         `;
     } else {
         banner.innerHTML = `
-            <span style="margin-right:10px;">
-                ⚠️ Buscá "Instalar app" o "Agregar a inicio" en el menú del navegador
+            <span style="flex:1 1 100%;">
+                ⚠️ Buscá "Instalar app" en el menú del navegador
             </span>
-            <button onclick="cerrarBanner()" style="
-                background:transparent;
-                border:none;
-                color:white;
-                font-size:16px;
-            ">✕</button>
+            <button onclick="cerrarBanner()" style="background:transparent;border:none;color:white;">✕</button>
         `;
     }
 }
 
-// evento instalación (Android)
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
 
@@ -270,36 +257,28 @@ window.addEventListener('beforeinstallprompt', (e) => {
     deferredPrompt = e;
 });
 
-// botón instalar
 function instalarApp() {
-    const banner = document.getElementById("installBanner");
-
     if (deferredPrompt) {
         deferredPrompt.prompt();
-
         deferredPrompt.userChoice.then(() => {
             deferredPrompt = null;
-            banner.style.display = "none";
+            document.getElementById("installBanner").style.display = "none";
         });
     } else {
         mostrarBannerManual();
     }
 }
 
-// cerrar banner
 function cerrarBanner() {
     document.getElementById("installBanner").style.display = "none";
     localStorage.setItem("hideInstallBanner", "true");
 }
 
-// INIT
 window.addEventListener("load", () => {
-    const banner = document.getElementById("installBanner");
-
     if (isStandalone()) return;
     if (localStorage.getItem("hideInstallBanner") === "true") return;
 
-    banner.style.display = "block";
+    document.getElementById("installBanner").style.display = "flex";
 
     setTimeout(() => {
         if (!deferredPrompt) {
@@ -307,19 +286,6 @@ window.addEventListener("load", () => {
         }
     }, 1200);
 });
-
-// password toggle
-function togglePassword(inputId, el) {
-    const input = document.getElementById(inputId);
-
-    if (input.type === "password") {
-        input.type = "text";
-        el.textContent = "🙈";
-    } else {
-        input.type = "password";
-        el.textContent = "👁️";
-    }
-}
 </script>
 
 </body>
