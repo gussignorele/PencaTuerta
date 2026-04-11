@@ -77,8 +77,8 @@ def calcular_puntos(gl, gv, pl, pv):
     return 0
 
 
-def recalcular_ranking():
-    conn = get_db()
+def recalcular_ranking(conn):
+    #conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -112,4 +112,4 @@ def recalcular_ranking():
         )
 
     conn.commit()
-    conn.close()
+    #conn.close()

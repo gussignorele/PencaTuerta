@@ -781,7 +781,8 @@ def admin_results():
         """, (gl, gv, match_id))
 
         conn.commit()
-        recalcular_ranking()
+        #recalcular_ranking()
+        recalcular_ranking(conn)
 
     # 🔥 lista de fechas
     cursor.execute("SELECT DISTINCT fecha_num FROM matches ORDER BY fecha_num")
@@ -828,7 +829,7 @@ def reset_results():
     conn.commit()
 
     # 🔥 CLAVE
-    recalcular_ranking()
+    recalcular_ranking(conn)
 
     conn.close()
 
