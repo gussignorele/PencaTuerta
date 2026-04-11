@@ -5,7 +5,7 @@
     <link rel="manifest" href="/static/manifest.json">
     <meta name="theme-color" content="#6c3bb8">
 
-
+```
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-startup-image" href="/static/img/splash.png">
@@ -91,7 +91,7 @@
         }
     }
 </style>
-
+```
 
 </head>
 
@@ -102,25 +102,12 @@
         📱 Instalá la app para una mejor experiencia
     </span>
 
-
-<button onclick="instalarApp()" style="
-    background:white;
-    color:#6c3bb8;
-    border:none;
-    padding:6px 12px;
-    border-radius:6px;
-    font-weight:bold;
-    margin-right:10px;
-">
+```
+<button onclick="instalarApp()" style="background:white;color:#6c3bb8;border:none;padding:6px 12px;border-radius:6px;font-weight:bold;margin-right:10px;">
     Instalar
 </button>
 
-<button onclick="cerrarBanner()" style="
-    background:transparent;
-    border:none;
-    color:white;
-    font-size:16px;
-">
+<button onclick="cerrarBanner()" style="background:transparent;border:none;color:white;font-size:16px;">
     ✕
 </button>
 ```
@@ -138,15 +125,7 @@
 <div style="display:flex; align-items:center; gap:10px;">
     <span style="font-size:14px;">{{user}}</span>
 
-    <a href="/logout" style="
-        background:white;
-        color:#4a1f6b;
-        padding:6px 10px;
-        border-radius:5px;
-        text-decoration:none;
-        font-size:12px;
-        font-weight:bold;
-    ">
+    <a href="/logout" style="background:white;color:#4a1f6b;padding:6px 10px;border-radius:5px;text-decoration:none;font-size:12px;font-weight:bold;">
         Salir
     </a>
 </div>
