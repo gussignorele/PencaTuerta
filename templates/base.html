@@ -18,13 +18,9 @@
     * { box-sizing: border-box; }
     body { overflow-x: hidden; }
 
-    .unlock {
-        animation: fadeIn 0.6s ease;
-    }
+    .unlock { animation: fadeIn 0.6s ease; }
 
-    input {
-        box-sizing: border-box;
-    }
+    input { box-sizing: border-box; }
 
     @keyframes fadeIn {
         from {
@@ -45,15 +41,8 @@
         border-radius: 5px;
     }
 
-    .flash.error {
-        background: #ffdddd;
-        color: #a00;
-    }
-
-    .flash.success {
-        background: #ddffdd;
-        color: #080;
-    }
+    .flash.error { background: #ffdddd; color: #a00; }
+    .flash.success { background: #ddffdd; color: #080; }
 
     input[type="number"].filled {
         border: 2px solid #28a745 !important;
@@ -76,19 +65,12 @@
         justify-content: center;
         align-items: center;
         gap: 8px;
-
         text-align: center;
     }
 
     @keyframes slideDown {
-        from {
-            transform: translateY(-100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        from { transform: translateY(-100%); opacity: 0; }
+        to   { transform: translateY(0); opacity: 1; }
     }
 </style>
 ```
@@ -207,10 +189,8 @@ function mostrarBannerManual() {
 
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
-
     if (isStandalone()) return;
     if (localStorage.getItem("hideInstallBanner") === "true") return;
-
     deferredPrompt = e;
 });
 
@@ -246,7 +226,6 @@ window.addEventListener("load", () => {
 
 function togglePassword(inputId, el) {
     const input = document.getElementById(inputId);
-
     if (input.type === "password") {
         input.type = "text";
         el.textContent = "🙈";
