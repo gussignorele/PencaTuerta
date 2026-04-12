@@ -82,13 +82,19 @@ def recalcular_ranking(conn):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT u.username,
-               m.goles_local, m.goles_visitante,
-               p.pred_local, p.pred_visitante
-        FROM users u
-        LEFT JOIN prediction p ON u.username = p.user
-        LEFT JOIN matches m ON p.match_id = m.id
-    """)
+                   SELECT u.username,
+                          m.goles_local,
+                          m.goles_visitante,
+                          p.pred_local,
+                          p.pred_visitante
+                   FROM users u
+                            LEFT JOIN prediction p ON u.username = p.user
+                            LEFT JOIN matches m ON p.match_id = m.id
+                   WHERE m.goles_local IS NOT NULL
+                     AND m.goles_visitante IS NOT NULL
+                     AND p.pred_local IS NOT NULL
+                     AND p.pred_visitante IS NOT NULL
+                   """)
 
     rows = cursor.fetchall()
 
@@ -98,14 +104,15 @@ def recalcular_ranking(conn):
         if user not in puntos:
             puntos[user] = 0
 
-        if gl is not None and gv is not None and pl is not None and pv is not None:
-            puntos[user] += calcular_puntos(gl, gv, pl, pv)
+        puntos[user] += calcular_puntos(gl, gv, pl, pv)
 
     # limpiar tabla
     cursor.execute("DELETE FROM scores")
-
+    cursor.execute("SELECT username FROM users")
+    all_users = [u[0] for u in cursor.fetchall()]
     # insertar nuevos
-    for user, pts in puntos.items():
+    for user in all_users:
+        pts = puntos.get(user, 0)
         cursor.execute(
             "INSERT INTO scores (user, puntos) VALUES (?, ?)",
             (user, pts)

@@ -160,6 +160,9 @@ function isStandalone() {
 function isIOS() {
     return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 }
+window.addEventListener('appinstalled', () => {
+    localStorage.setItem("appInstalled", "true");
+});
 
 function mostrarBannerManual() {
     const banner = document.getElementById("installBanner");
@@ -183,7 +186,7 @@ function mostrarBannerManual() {
 
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
-    if (isStandalone()) {
+    if (isStandalone() || localStorage.getItem("appInstalled") === "true") {
         document.getElementById("installBanner").style.display = "none";
         return;
     }
@@ -209,14 +212,27 @@ function cerrarBanner() {
 }
 
 window.addEventListener("load", () => {
-    if (isStandalone()) return;
+    if (isStandalone() || localStorage.getItem("appInstalled") === "true") return;
     if (localStorage.getItem("hideInstallBanner") === "true") return;
 
-    setTimeout(() => {
+const banner = document.getElementById("installBanner");
+
+// iPhone → mostrar ayuda
+if (isIOS()) {
+    banner.innerHTML = `
+        <span style="flex:1 1 100%;">
+            📱 En iPhone: compartir ⬆️ → "Agregar a pantalla de inicio"
+        </span>
+        <button onclick="cerrarBanner()" style="background:transparent;border:none;color:white;">✕</button>
+    `;
+    banner.style.display = "flex";
+    return;
+}
+
+// Android → SOLO si hay evento real
+setTimeout(() => {
     if (deferredPrompt) {
-        document.getElementById("installBanner").style.display = "flex";
-    } else {
-        mostrarBannerManual();
+        banner.style.display = "flex";
     }
 }, 800);
 
