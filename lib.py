@@ -116,7 +116,17 @@ WHERE
         puntos[user] += calcular_puntos(gl, gv, pl, pv)
 
     # limpiar tabla
-    cursor.execute("DELETE FROM scores")
+    #cursor.execute("DELETE FROM scores")
+    # 🔥 recrear tabla limpia (evita residuos)
+    cursor.execute("DROP TABLE IF EXISTS scores")
+
+    cursor.execute("""
+                   CREATE TABLE scores
+                   (
+                       user   TEXT PRIMARY KEY,
+                       puntos INTEGER
+                   )
+                   """)
     cursor.execute("SELECT username FROM users")
     all_users = [u[0] for u in cursor.fetchall()]
     # insertar nuevos
