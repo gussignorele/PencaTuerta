@@ -192,6 +192,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     }
     if (localStorage.getItem("hideInstallBanner") === "true") return;
     deferredPrompt = e;
+    document.getElementById("installBanner").style.display = "flex";
 });
 function instalarApp() {
     if (!deferredPrompt) return;
@@ -224,13 +225,6 @@ if (isIOS()) {
     banner.style.display = "flex";
     return;
 }
-
-// Android → SOLO si hay evento real
-setTimeout(() => {
-    if (deferredPrompt) {
-        banner.style.display = "flex";
-    }
-}, 800);
 
 
 });
