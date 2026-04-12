@@ -193,17 +193,20 @@ window.addEventListener('beforeinstallprompt', (e) => {
     if (localStorage.getItem("hideInstallBanner") === "true") return;
     deferredPrompt = e;
 });
-
 function instalarApp() {
-    if (!deferredPrompt) return;
-
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => {
-        deferredPrompt = null;
-        document.getElementById("installBanner").style.display = "none";
-    });
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+            deferredPrompt = null;
+            document.getElementById("installBanner").style.display = "none";
+        });
+    } else {
+        // fallback SOLO en navegador
+        if (!isStandalone()) {
+            mostrarBannerManual();
+        }
+    }
 }
-
 function cerrarBanner() {
     document.getElementById("installBanner").style.display = "none";
     localStorage.setItem("hideInstallBanner", "true");
