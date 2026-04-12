@@ -194,18 +194,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
     deferredPrompt = e;
 });
 function instalarApp() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-            deferredPrompt = null;
-            document.getElementById("installBanner").style.display = "none";
-        });
-    } else {
-        // fallback SOLO en navegador
-        if (!isStandalone()) {
-            mostrarBannerManual();
-        }
-    }
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+        document.getElementById("installBanner").style.display = "none";
+    });
 }
 function cerrarBanner() {
     document.getElementById("installBanner").style.display = "none";
