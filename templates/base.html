@@ -201,6 +201,13 @@ function instalarApp() {
     }
 
     deferredPrompt.prompt();
+
+    deferredPrompt.userChoice.then((choice) => {
+        if (choice.outcome === "accepted") {
+            document.getElementById("installBanner").style.display = "none";
+            deferredPrompt = null;
+        }
+    });
 }
 function cerrarBanner() {
     document.getElementById("installBanner").style.display = "none";
