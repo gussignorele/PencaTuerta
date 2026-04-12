@@ -557,24 +557,30 @@ def ranking():
     pts_fecha = {}   # 🔥 IMPORTANTE (evita crash)
 
     cursor.execute("""
-        SELECT p.user,
-               SUM(
+SELECT p.user,
+       SUM(
+           CASE
+               WHEN m.goles_local IS NOT NULL AND m.goles_visitante IS NOT NULL THEN
                    CASE
-                       WHEN m.goles_local IS NOT NULL THEN
-                           CASE
-                               WHEN m.goles_local = p.pred_local AND m.goles_visitante = p.pred_visitante THEN 3
-                               WHEN (m.goles_local - m.goles_visitante) *
-                                    (p.pred_local - p.pred_visitante) > 0 THEN 1
-                               ELSE 0
-                           END
+                       WHEN m.goles_local = p.pred_local 
+                            AND m.goles_visitante = p.pred_visitante THEN 3
+                       WHEN (
+                            (m.goles_local > m.goles_visitante AND p.pred_local > p.pred_visitante)
+                         OR (m.goles_local < m.goles_visitante AND p.pred_local < p.pred_visitante)
+                         OR (m.goles_local = m.goles_visitante AND p.pred_local = p.pred_visitante)
+                       ) THEN 1
                        ELSE 0
                    END
-               ) as pts
-        FROM prediction p
-        JOIN matches m ON p.match_id = m.id
-        WHERE m.fecha_num = ?
-        GROUP BY p.user
-    """, (fecha_sel,))
+               ELSE 0
+           END
+       ) as pts
+FROM prediction p
+JOIN matches m ON p.match_id = m.id
+WHERE m.fecha_num = ?
+  AND m.goles_local IS NOT NULL
+  AND m.goles_visitante IS NOT NULL
+GROUP BY p.user
+                   """, (fecha_sel,))
 
     pts_fecha = {u: pts for u, pts in cursor.fetchall()}
     tabla_fecha = sorted(pts_fecha.items(), key=lambda x: -x[1])
