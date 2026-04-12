@@ -195,13 +195,12 @@ window.addEventListener('beforeinstallprompt', (e) => {
     document.getElementById("installBanner").style.display = "flex";
 });
 function instalarApp() {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+        document.getElementById("installBanner").style.display = "none";
+        return;
+    }
 
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => {
-        deferredPrompt = null;
-        document.getElementById("installBanner").style.display = "none";
-    });
 }
 function cerrarBanner() {
     document.getElementById("installBanner").style.display = "none";
