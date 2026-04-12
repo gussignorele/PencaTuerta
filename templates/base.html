@@ -195,15 +195,13 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 function instalarApp() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-            deferredPrompt = null;
-            document.getElementById("installBanner").style.display = "none";
-        });
-    } else {
-        mostrarBannerManual();
-    }
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+        document.getElementById("installBanner").style.display = "none";
+    });
 }
 
 function cerrarBanner() {
