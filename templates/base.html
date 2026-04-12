@@ -159,19 +159,22 @@ let deferredPrompt = null;
 
 function isStandalone() {
     return window.matchMedia('(display-mode: standalone)').matches
-        || window.navigator.standalone === true
-        || document.referrer.includes('android-app://');
+        || window.navigator.standalone === true;
 }
 
-function isIOS() {
-    return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
-}
+// 🔥 si ya está instalada → eliminar banner SIEMPRE
+document.addEventListener("DOMContentLoaded", () => {
+    if (isStandalone()) {
+        const b = document.getElementById("installBanner");
+        if (b) b.remove();
+    }
+});
 
 window.addEventListener('appinstalled', () => {
     localStorage.setItem("appInstalled", "true");
 });
 
-// 👉 SOLO acá se muestra el banner
+// 🔥 SOLO mostrar cuando realmente se puede instalar
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
 
@@ -196,13 +199,15 @@ function instalarApp() {
 
 function cerrarBanner() {
     document.getElementById("installBanner").style.display = "none";
-    localStorage.setItem("hideInstallBanner", "true");
 }
 
-// 👉 SOLO iPhone muestra ayuda manual
+// SOLO iPhone
+function isIOS() {
+    return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+}
+
 window.addEventListener("load", () => {
-    if (isStandalone() || localStorage.getItem("appInstalled") === "true") return;
-    if (localStorage.getItem("hideInstallBanner") === "true") return;
+    if (isStandalone()) return;
 
     if (isIOS()) {
         const banner = document.getElementById("installBanner");
@@ -216,17 +221,6 @@ window.addEventListener("load", () => {
         banner.style.display = "flex";
     }
 });
-
-function togglePassword(inputId, el) {
-    const input = document.getElementById(inputId);
-    if (input.type === "password") {
-        input.type = "text";
-        el.textContent = "🙈";
-    } else {
-        input.type = "password";
-        el.textContent = "👁️";
-    }
-}
 </script>
 
 </body>
