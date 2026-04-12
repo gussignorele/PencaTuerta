@@ -162,7 +162,7 @@ function isStandalone() {
         || window.navigator.standalone === true;
 }
 
-// 🔥 si ya está instalada → eliminar banner SIEMPRE
+// 🔥 si ya está instalada → eliminar banner
 document.addEventListener("DOMContentLoaded", () => {
     if (isStandalone()) {
         const b = document.getElementById("installBanner");
@@ -174,26 +174,27 @@ window.addEventListener('appinstalled', () => {
     localStorage.setItem("appInstalled", "true");
 });
 
-// 🔥 SOLO mostrar cuando realmente se puede instalar
+// 🔥 guardar evento correctamente
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
 
-    if (isStandalone()) return;
-
     deferredPrompt = e;
-    document.getElementById("installBanner").style.display = "flex";
+
+    const banner = document.getElementById("installBanner");
+    if (banner) banner.style.display = "flex";
 });
 
 function instalarApp() {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+        console.log("NO prompt disponible");
+        return;
+    }
 
     deferredPrompt.prompt();
 
-    deferredPrompt.userChoice.then((choice) => {
-        if (choice.outcome === "accepted") {
-            document.getElementById("installBanner").style.display = "none";
-            deferredPrompt = null;
-        }
+    deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+        document.getElementById("installBanner").style.display = "none";
     });
 }
 
