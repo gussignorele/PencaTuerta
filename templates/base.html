@@ -162,8 +162,8 @@ function isStandalone() {
         || window.navigator.standalone === true;
 }
 
-// 🔥 si ya está instalada → eliminar banner
-document.addEventListener("DOMContentLoaded", () => {
+// 🔥 eliminar banner si ya está instalada (más robusto)
+window.addEventListener("load", () => {
     if (isStandalone()) {
         const b = document.getElementById("installBanner");
         if (b) b.remove();
@@ -174,27 +174,31 @@ window.addEventListener('appinstalled', () => {
     localStorage.setItem("appInstalled", "true");
 });
 
-// 🔥 guardar evento correctamente
+// 🔥 SOLO mostrar si realmente hay prompt disponible
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
 
     deferredPrompt = e;
 
-    const banner = document.getElementById("installBanner");
-    if (banner) banner.style.display = "flex";
+    if (!isStandalone()) {
+        const banner = document.getElementById("installBanner");
+        if (banner) banner.style.display = "flex";
+    }
 });
 
 function instalarApp() {
     if (!deferredPrompt) {
-        console.log("NO prompt disponible");
+        alert("Instalación no disponible en este momento");
         return;
     }
 
     deferredPrompt.prompt();
 
-    deferredPrompt.userChoice.then(() => {
+    deferredPrompt.userChoice.then((choice) => {
+        if (choice.outcome === "accepted") {
+            document.getElementById("installBanner").style.display = "none";
+        }
         deferredPrompt = null;
-        document.getElementById("installBanner").style.display = "none";
     });
 }
 
