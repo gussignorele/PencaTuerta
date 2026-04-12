@@ -98,7 +98,7 @@ def recalcular_ranking(conn):
         if user not in puntos:
             puntos[user] = 0
 
-        if gl is not None:
+        if gl is not None and gv is not None and pl is not None and pv is not None:
             puntos[user] += calcular_puntos(gl, gv, pl, pv)
 
     # limpiar tabla

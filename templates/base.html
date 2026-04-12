@@ -153,9 +153,10 @@
 let deferredPrompt = null;
 
 function isStandalone() {
-    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    return window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true
+        || document.referrer.includes('android-app://');
 }
-
 function isIOS() {
     return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 }
@@ -182,7 +183,10 @@ function mostrarBannerManual() {
 
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
-    if (isStandalone()) return;
+    if (isStandalone()) {
+        document.getElementById("installBanner").style.display = "none";
+        return;
+    }
     if (localStorage.getItem("hideInstallBanner") === "true") return;
     deferredPrompt = e;
 });
@@ -208,13 +212,15 @@ window.addEventListener("load", () => {
     if (isStandalone()) return;
     if (localStorage.getItem("hideInstallBanner") === "true") return;
 
-    document.getElementById("installBanner").style.display = "flex";
-
     setTimeout(() => {
-        if (!deferredPrompt) {
-            mostrarBannerManual();
-        }
-    }, 1200);
+    if (deferredPrompt) {
+        document.getElementById("installBanner").style.display = "flex";
+    } else {
+        mostrarBannerManual();
+    }
+}, 800);
+
+
 });
 
 function togglePassword(inputId, el) {
