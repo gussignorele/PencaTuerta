@@ -82,25 +82,34 @@ def recalcular_ranking(conn):
     cursor = conn.cursor()
 
     cursor.execute("""
-                   SELECT u.username,
-                          m.goles_local,
-                          m.goles_visitante,
-                          p.pred_local,
-                          p.pred_visitante
-                   FROM users u
-                            LEFT JOIN prediction p ON u.username = p.user
-                            LEFT JOIN matches m ON p.match_id = m.id
-                   WHERE m.goles_local IS NOT NULL
-                     AND m.goles_visitante IS NOT NULL
-                     AND p.pred_local IS NOT NULL
-                     AND p.pred_visitante IS NOT NULL
+                   SELECT 
+    p.user,
+    p.match_id,
+    m.goles_local,
+    m.goles_visitante,
+    p.pred_local,
+    p.pred_visitante
+FROM prediction p
+JOIN matches m ON p.match_id = m.id
+WHERE 
+    m.goles_local IS NOT NULL
+    AND m.goles_visitante IS NOT NULL
                    """)
 
     rows = cursor.fetchall()
 
     puntos = {}
 
-    for user, gl, gv, pl, pv in rows:
+    procesados = set()
+
+    for user, match_id, gl, gv, pl, pv in rows:
+        key = (user, match_id)
+
+        if key in procesados:
+            continue
+
+        procesados.add(key)
+
         if user not in puntos:
             puntos[user] = 0
 

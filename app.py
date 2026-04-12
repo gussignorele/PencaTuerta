@@ -779,7 +779,14 @@ def admin_results():
             SET goles_local=?, goles_visitante=?
             WHERE id=?
         """, (gl, gv, match_id))
-
+        # 🔥 LIMPIAR DUPLICADOS (UNA VEZ)
+        cursor.execute("""
+                       DELETE
+                       FROM prediction
+                       WHERE id NOT IN (SELECT MIN(id)
+                                        FROM prediction
+                                        GROUP BY user, match_id)
+                       """)
         conn.commit()
         #recalcular_ranking()
         recalcular_ranking(conn)
