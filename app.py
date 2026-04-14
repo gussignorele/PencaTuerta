@@ -188,7 +188,52 @@ def crear_pago(fecha):
 
     return redirect(data["init_point"])
 
+@app.route("/update_avatar", methods=["POST"])
+def update_avatar():
+    if "user" not in session:
+        return redirect("/")
 
+    user = session["user"]
+    file = request.files.get("avatar_file")
+
+    if not file or file.filename == "":
+        return redirect(f"/user/{user}")
+
+    filename = f"{user}.jpg"
+    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+    from PIL import Image
+
+    img = Image.open(file)
+    img = img.convert("RGB")
+
+    width, height = img.size
+    min_side = min(width, height)
+
+    left = (width - min_side) // 2
+    top = (height - min_side) // 2
+    right = (width + min_side) // 2
+    bottom = (height + min_side) // 2
+
+    img = img.crop((left, top, right, bottom))
+    img = img.resize((200, 200))
+
+    img.save(filepath, format="JPEG", quality=75, optimize=True)
+
+    avatar = f"/avatars/{filename}"
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE users SET avatar=? WHERE username=?",
+        (avatar, user)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(f"/user/{user}")
 @app.route("/admin/delete_match/<int:match_id>", methods=["POST"])
 def delete_match(match_id):
     if not is_admin():

@@ -105,7 +105,9 @@
 
 {% if user %}
 <div style="display:flex; align-items:center; gap:10px;">
-    <span style="font-size:14px;">{{user}}</span>
+    <a href="/user/{{user}}" style="color:white; text-decoration:none;">
+    {{user}}
+</a>
     <a href="/logout" style="background:white;color:#4a1f6b;padding:6px 10px;border-radius:5px;text-decoration:none;font-size:12px;font-weight:bold;">
         Salir
     </a>
