@@ -268,8 +268,19 @@ def user_detail(username):
     fecha_sel = request.args.get("fecha", type=int)
 
     if not fecha_sel:
-        cursor.execute("SELECT MAX(fecha_num) FROM matches")
-        fecha_sel = cursor.fetchone()[0]
+        cursor.execute("""
+                       SELECT MAX(m.fecha_num)
+                       FROM prediction p
+                                JOIN matches m ON p.match_id = m.id
+                       WHERE p.user = ?
+                       """, (username,))
+
+        row = cursor.fetchone()
+
+        if row and row[0]:
+            fecha_sel = row[0]
+        else:
+            fecha_sel = 1
 
     # lista de fechas
     cursor.execute("SELECT DISTINCT fecha_num FROM matches ORDER BY fecha_num")
