@@ -20,7 +20,7 @@ else:
     UPLOAD_FOLDER = os.path.join("static", "img")
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
+MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN")
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -179,7 +179,7 @@ def crear_pago(fecha):
     }
 
     headers = {
-        "Authorization": "Bearer TU_ACCESS_TOKEN_TEST"
+        "Authorization": f"Bearer {MP_ACCESS_TOKEN}"
     }
     headers = {
         "Authorization": "Bearer APP_USR-7640286795954243-041221-1f5c0a09e01817725744ed4d282ae6c0-3331694558"

@@ -50,23 +50,21 @@
     }
 
     #installBanner {
-        display: none;
-        width: 100%;
-        background: #6c3bb8;
-        color: white;
-        padding: 12px;
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        animation: slideDown 0.4s ease;
+    display: none;
+    width: 100%;
+    background: #6c3bb8;
+    color: white;
+    padding: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        text-align: center;
-    }
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
 
     @keyframes slideDown {
         from { transform: translateY(-100%); opacity: 0; }
@@ -104,7 +102,6 @@
 
 
 {% if user %}
-    👤 
     <a href="/user/{{user}}" style="
         color:#ffd700;
         text-decoration:underline;
@@ -167,29 +164,22 @@ function isStandalone() {
         || window.navigator.standalone === true;
 }
 
-// 🔥 eliminar banner si ya está instalada (más robusto)
-window.addEventListener("load", () => {
-    if (isStandalone()) {
-        const b = document.getElementById("installBanner");
-        if (b) b.remove();
-    }
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+
+    if (isStandalone()) return; // 🔥 clave
+
+    deferredPrompt = e;
+
+    const banner = document.getElementById("installBanner");
+    if (banner) banner.style.display = "flex";
 });
 
 window.addEventListener('appinstalled', () => {
     localStorage.setItem("appInstalled", "true");
 });
 
-// 🔥 SOLO mostrar si realmente hay prompt disponible
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
 
-    deferredPrompt = e;
-
-    if (!isStandalone()) {
-        const banner = document.getElementById("installBanner");
-        if (banner) banner.style.display = "flex";
-    }
-});
 
 function instalarApp() {
     if (!deferredPrompt) {
@@ -217,7 +207,7 @@ function isIOS() {
 }
 
 window.addEventListener("load", () => {
-    if (isStandalone()) return;
+    if (isStandalone() || localStorage.getItem("appInstalled")) return;
 
     if (isIOS()) {
         const banner = document.getElementById("installBanner");
