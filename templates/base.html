@@ -103,10 +103,12 @@
     </div>
 
 
-{% if user %}
-<div style="display:flex; align-items:center; gap:10px;">
-    <a href="/user/{{user}}" style="color:white; text-decoration:none;">
-    {{user}}
+<a href="/user/{{user}}" style="
+    color:#ffd700;
+    text-decoration:underline;
+    font-weight:bold;
+">
+    👤 {{user}}
 </a>
     <a href="/logout" style="background:white;color:#4a1f6b;padding:6px 10px;border-radius:5px;text-decoration:none;font-size:12px;font-weight:bold;">
         Salir
@@ -228,6 +230,7 @@ window.addEventListener("load", () => {
         banner.style.display = "flex";
     }
 });
+
 </script>
 
 </body>

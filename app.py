@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, session, flash
 import sqlite3
 import os
+import time
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from lib import calcular_puntos, logos, recalcular_ranking
 from datetime import datetime
@@ -220,8 +222,8 @@ def update_avatar():
 
     img.save(filepath, format="JPEG", quality=75, optimize=True)
 
-    avatar = f"/avatars/{filename}"
 
+    avatar = f"/avatars/{filename}?t={int(time.time())}"
     conn = get_db()
     cursor = conn.cursor()
 
@@ -232,7 +234,7 @@ def update_avatar():
 
     conn.commit()
     conn.close()
-
+    flash("Avatar actualizado correctamente", "success")
     return redirect(f"/user/{user}")
 @app.route("/admin/delete_match/<int:match_id>", methods=["POST"])
 def delete_match(match_id):
