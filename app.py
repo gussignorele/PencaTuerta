@@ -5,10 +5,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from lib import calcular_puntos, logos, recalcular_ranking
 from datetime import datetime
 from PIL import Image
+import requests
 import io
 app = Flask(__name__)
 app.secret_key = "super-secret-key-key"
-
+TEST_USERS = ["gsignorele"]
 DB_PATH = "/data/database.db" if os.path.exists("/data") else "database.db"
 
 if os.path.exists("/data"):
@@ -46,7 +47,22 @@ def init_db():
         goles_visitante INTEGER
     )
     """)
-
+    cursor.execute("""
+                   CREATE TABLE IF NOT EXISTS payments
+                   (
+                       id
+                       INTEGER
+                       PRIMARY
+                       KEY
+                       AUTOINCREMENT,
+                       user
+                       TEXT,
+                       fecha_num
+                       INTEGER,
+                       status
+                       TEXT
+                   )
+                   """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS prediction (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,8 +122,91 @@ def is_admin():
     user = session.get("user", "")
     return user.strip().lower() == "gsignorele" or session.get("is_admin") == True
 
+def pago_habilitado(user, fecha):
+    user = user.strip().lower()
+
+    if user in TEST_USERS:
+        return True
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT 1 FROM payments
+        WHERE user=? AND fecha_num=? AND status='approved'
+    """, (user, fecha))
+
+    ok = cursor.fetchone() is not None
+
+    conn.close()
+    return ok
+@app.route("/crear_pago/<int:fecha>")
+def crear_pago(fecha):
+    import requests
+
+    if "user" not in session:
+        return redirect("/")
+
+    user = session["user"]
+
+    # 🔒 solo test users por ahora
+    if user not in TEST_USERS:
+        return redirect("/matches")
+
+    url = "https://api.mercadopago.com/checkout/preferences"
+    BASE_URL = "https://penca-tuerta.onrender.com"
+    payload = {
+        "items": [
+            {
+                "title": f"Penca Fecha {fecha}",
+                "quantity": 1,
+                "unit_price": 10  # 🔥 bajo para pruebas
+            }
+        ],
+        "metadata": {
+            "user": user,
+            "fecha": fecha
+        },
+
+        "back_urls": {
+            "success": f"{BASE_URL}/matches",
+            "failure": f"{BASE_URL}/matches",
+            "pending": f"{BASE_URL}/matches"
+        },
+        "auto_return": "approved"
+    }
+
+    headers = {
+        "Authorization": "Bearer TU_ACCESS_TOKEN_TEST"
+    }
+    headers = {
+        "Authorization": "Bearer APP_USR-7640286795954243-041221-1f5c0a09e01817725744ed4d282ae6c0-3331694558"
+    }
+    r = requests.post(url, json=payload, headers=headers)
+
+    data = r.json()
+
+    return redirect(data["init_point"])
 
 
+@app.route("/admin/delete_match/<int:match_id>", methods=["POST"])
+def delete_match(match_id):
+    if not is_admin():
+        return redirect("/admin/login")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # borrar predicciones asociadas
+    cursor.execute("DELETE FROM prediction WHERE match_id=?", (match_id,))
+
+    # borrar partido
+    cursor.execute("DELETE FROM matches WHERE id=?", (match_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(request.referrer or "/admin/matches")
 @app.route("/user/<username>")
 def user_detail(username):
     conn = get_db()
@@ -368,6 +467,7 @@ def matches(fecha_sel=None):
         return redirect("/")
 
     user = session["user"]
+    puede_pagar = user in TEST_USERS
 
     conn = get_db()
     cursor = conn.cursor()
@@ -424,7 +524,8 @@ def matches(fecha_sel=None):
         min_fecha=min_fecha,
         max_fecha=max_fecha,
         fecha_max_permitida=fecha_max_permitida,
-        now=datetime.now().isoformat()
+        now=datetime.now().isoformat(),
+        puede_pagar=puede_pagar
     )
 
 @app.route("/admin/reset_scores", methods=["POST"])
