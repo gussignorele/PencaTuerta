@@ -25,11 +25,18 @@ MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
-
+ADMINS = {"gsignorele", "otro_admin"}
+PAYMENTS_ENABLED = os.getenv("PAYMENTS_ENABLED", "false").lower() == "true"
+PRICE_PER_FECHA = int(os.getenv("PRICE_PER_FECHA", "150"))
 
 def get_db():
     return sqlite3.connect(DB_PATH)
-
+def puede_jugar(user, fecha):
+    if user in ADMINS:
+        return True
+    if not PAYMENTS_ENABLED:
+        return True
+    return pago_habilitado(user, fecha)
 
 # =========================
 # INIT DB
@@ -127,8 +134,7 @@ def is_admin():
 def pago_habilitado(user, fecha):
     user = user.strip().lower()
 
-    # 🔥 SOLO gsignorele requiere pago
-    if user != "gsignorele":
+    if user in ADMINS:
         return True
 
     conn = get_db()
@@ -143,6 +149,9 @@ def pago_habilitado(user, fecha):
 
     conn.close()
     return ok
+
+
+
 @app.route("/crear_pago/<int:fecha>")
 def crear_pago(fecha):
     import requests
@@ -151,10 +160,6 @@ def crear_pago(fecha):
         return redirect("/")
 
     user = session["user"]
-
-    # 🔒 solo test users por ahora
-    if user != "gsignorele":
-        return redirect("/matches")
 
 
     url = "https://api.mercadopago.com/checkout/preferences"
@@ -166,7 +171,7 @@ def crear_pago(fecha):
             {
                 "title": f"Penca Fecha {fecha}",
                 "quantity": 1,
-                "unit_price": 10  # 🔥 bajo para pruebas
+                "unit_price": PRICE_PER_FECHA  # 🔥 bajo para pruebas
             }
         ],
         "metadata": {
@@ -587,7 +592,6 @@ def matches(fecha_sel=None):
         return redirect("/")
 
     user = session["user"]
-    puede_pagar = (user == "gsignorele")
 
     conn = get_db()
     cursor = conn.cursor()
@@ -635,6 +639,8 @@ def matches(fecha_sel=None):
 
     conn.close()
     pago_ok = pago_habilitado(user, fecha_actual)
+    payments_enabled = PAYMENTS_ENABLED
+    is_admin_user = user in ADMINS
     return render_template(
         "matches.html",
         matches=matches_data,
@@ -645,8 +651,9 @@ def matches(fecha_sel=None):
         max_fecha=max_fecha,
         fecha_max_permitida=fecha_max_permitida,
         now=datetime.now().isoformat(),
-        puede_pagar=puede_pagar,
-        pago_ok=pago_ok
+        pago_ok=pago_ok,
+        payments_enabled=payments_enabled,
+        is_admin_user=is_admin_user
     )
 
 @app.route("/admin/reset_scores", methods=["POST"])
@@ -705,7 +712,7 @@ def predict():
         fecha_num = row[1]
 
         # 🔥 BLOQUEO POR PAGO
-        if not pago_habilitado(user, fecha_num):
+        if not puede_jugar(user, fecha_num):
             conn.close()
             return redirect(f"/crear_pago/{fecha_num}")
 
