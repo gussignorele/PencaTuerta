@@ -11,7 +11,7 @@ import requests
 import io
 app = Flask(__name__)
 app.secret_key = "super-secret-key-key"
-TEST_USERS = ["gsignorele"]
+
 DB_PATH = "/data/database.db" if os.path.exists("/data") else "database.db"
 
 if os.path.exists("/data"):
@@ -127,7 +127,8 @@ def is_admin():
 def pago_habilitado(user, fecha):
     user = user.strip().lower()
 
-    if user in TEST_USERS:
+    # 🔥 SOLO gsignorele requiere pago
+    if user != "gsignorele":
         return True
 
     conn = get_db()
@@ -152,12 +153,15 @@ def crear_pago(fecha):
     user = session["user"]
 
     # 🔒 solo test users por ahora
-    if user not in TEST_USERS:
+    if user != "gsignorele":
         return redirect("/matches")
+
 
     url = "https://api.mercadopago.com/checkout/preferences"
     BASE_URL = "https://penca-tuerta.onrender.com"
     payload = {
+
+        "notification_url": "https://penca-tuerta.onrender.com/webhook",
         "items": [
             {
                 "title": f"Penca Fecha {fecha}",
@@ -181,15 +185,53 @@ def crear_pago(fecha):
     headers = {
         "Authorization": f"Bearer {MP_ACCESS_TOKEN}"
     }
-    headers = {
-        "Authorization": "Bearer APP_USR-7640286795954243-041221-1f5c0a09e01817725744ed4d282ae6c0-3331694558"
-    }
+
     r = requests.post(url, json=payload, headers=headers)
 
     data = r.json()
 
     return redirect(data["init_point"])
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    import requests
+    import os
 
+    data = request.json
+
+    if data.get("type") == "payment":
+        payment_id = data["data"]["id"]
+
+        r = requests.get(
+            f"https://api.mercadopago.com/v1/payments/{payment_id}",
+            headers={"Authorization": f"Bearer {os.getenv('MP_ACCESS_TOKEN')}"}
+        )
+
+        payment = r.json()
+
+        if payment["status"] == "approved":
+            user = payment["metadata"]["user"]
+            fecha = payment["metadata"]["fecha"]
+
+            conn = get_db()
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                           SELECT 1
+                           FROM payments
+                           WHERE user = ?
+                             AND fecha_num = ?
+                           """, (user, fecha))
+
+            if not cursor.fetchone():
+                cursor.execute("""
+                               INSERT INTO payments (user, fecha_num, status)
+                               VALUES (?, ?, 'approved')
+                               """, (user, fecha))
+
+            conn.commit()
+            conn.close()
+
+    return "OK", 200
 @app.route("/update_avatar", methods=["POST"])
 def update_avatar():
     if "user" not in session:
@@ -514,6 +556,26 @@ def register():
 
     return render_template("register.html")
 
+@app.route("/admin/reset_torneo", methods=["POST"])
+def reset_torneo():
+    if not is_admin():
+        return redirect("/admin/login")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM prediction")
+    cursor.execute("DELETE FROM matches")
+    cursor.execute("DELETE FROM payments")
+    cursor.execute("UPDATE scores SET puntos = 0")
+
+    conn.commit()
+    conn.close()
+
+    flash("Torneo reseteado completamente", "success")
+    return redirect("/admin")
+
+
 
 # =========================
 # MATCHES
@@ -525,7 +587,7 @@ def matches(fecha_sel=None):
         return redirect("/")
 
     user = session["user"]
-    puede_pagar = user in TEST_USERS
+    puede_pagar = (user == "gsignorele")
 
     conn = get_db()
     cursor = conn.cursor()
@@ -572,7 +634,7 @@ def matches(fecha_sel=None):
     matches_data = cursor.fetchall()
 
     conn.close()
-
+    pago_ok = pago_habilitado(user, fecha_actual)
     return render_template(
         "matches.html",
         matches=matches_data,
@@ -583,7 +645,8 @@ def matches(fecha_sel=None):
         max_fecha=max_fecha,
         fecha_max_permitida=fecha_max_permitida,
         now=datetime.now().isoformat(),
-        puede_pagar=puede_pagar
+        puede_pagar=puede_pagar,
+        pago_ok=pago_ok
     )
 
 @app.route("/admin/reset_scores", methods=["POST"])
@@ -609,6 +672,8 @@ def predict():
     if "user" not in session:
         return redirect("/")
 
+
+
     user = session["user"]
     match_id = int(request.form["match_id"])
 
@@ -627,16 +692,30 @@ def predict():
     cursor = conn.cursor()
 
     # 🔒 BLOQUEO: no permitir si el partido ya empezó
-    cursor.execute("SELECT fecha_hora FROM matches WHERE id=?", (match_id,))
-    row = cursor.fetchone()
+    cursor.execute("""
+                   SELECT fecha_hora, fecha_num
+                   FROM matches
+                   WHERE id = ?
+                   """, (match_id,))
 
+
+    row = cursor.fetchone()
     if row:
         fecha_partido = datetime.fromisoformat(row[0])
+        fecha_num = row[1]
 
+        # 🔥 BLOQUEO POR PAGO
+        if not pago_habilitado(user, fecha_num):
+            conn.close()
+            return redirect(f"/crear_pago/{fecha_num}")
+
+        # 🔒 BLOQUEO POR TIEMPO
         if datetime.now() >= fecha_partido:
             conn.close()
             flash("El partido ya comenzó", "error")
             return redirect(request.referrer or "/matches")
+
+
 
     # guardar predicción
     cursor.execute("""
@@ -654,7 +733,45 @@ def predict():
     conn.commit()
     conn.close()
 
+
     return redirect(request.referrer or "/matches")
+
+@app.route("/admin/nuevo_torneo", methods=["POST"])
+def nuevo_torneo():
+    if not is_admin():
+        return redirect("/admin/login")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT MAX(fecha_num) FROM matches")
+    max_fecha = cursor.fetchone()[0] or 0
+
+    session["base_fecha"] = max_fecha
+
+    conn.close()
+
+    flash(f"Nuevo torneo iniciado (desde fecha {max_fecha + 1})", "success")
+    return redirect("/admin")
+@app.route("/admin/payments")
+def admin_payments():
+    if not is_admin():
+        return redirect("/admin/login")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT user, fecha_num, status
+        FROM payments
+        ORDER BY fecha_num DESC
+    """)
+
+    pagos = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("admin_payments.html", pagos=pagos)
 # =========================
 # RANKING
 # =========================
@@ -852,7 +969,8 @@ def admin_matches():
         visitante = request.form["visitante"]
         fecha = request.form["fecha"]
         hora = request.form["hora"]
-        fecha_num = int(request.form["fecha_num"])
+        base = session.get("base_fecha", 0)
+        fecha_num = base + int(request.form["fecha_num"])
 
         fecha_dt = datetime.fromisoformat(f"{fecha}T{hora}")
 

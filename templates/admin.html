@@ -92,20 +92,44 @@
 
 </div>
 {% endfor %}
+<hr>
+
+<h3>Acciones de mantenimiento</h3>
+
 <form method="POST" action="/admin/reset_scores"
       onsubmit="return confirm('¿Seguro que querés resetear todos los puntajes?')">
 
     <button style="
-        background:#ff4d4d;
+        background:#ff9800;
         color:white;
         border:none;
         padding:10px 15px;
         border-radius:6px;
         font-weight:bold;
-        margin-top:15px;
+        margin-top:10px;
+        width:100%;
     ">
-        🔥 Resetear puntajes
+        🔄 Resetear puntajes (ranking)
     </button>
+</form>
 
+<br>
+
+<h3 style="color:#ff4d4d;">Zona peligrosa</h3>
+
+<form action="/admin/reset_torneo" method="post"
+      onsubmit="return confirm('⚠️ Esto BORRA TODO (partidos, predicciones, pagos). ¿Seguro?')">
+
+    <button style="
+        background:#ff4d4d;
+        color:white;
+        border:none;
+        padding:12px;
+        border-radius:6px;
+        font-weight:bold;
+        width:100%;
+    ">
+        🔥 Resetear torneo completo
+    </button>
 </form>
 {% endblock %}

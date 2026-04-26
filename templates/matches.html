@@ -3,12 +3,16 @@
 {% block content %}
 
 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-{% if puede_pagar %}
-<a href="/crear_pago/{{ fecha_actual }}"
-   style="background:#00c853;color:white;padding:10px;border-radius:6px;text-decoration:none;">
-   💳 Probar pago (test)
-</a>
+{% if user == "gsignorele" %}
+    {% if pago_ok %}
+        <span>Pagado ✅</span>
+    {% else %}
+        <a href="/crear_pago/{{ fecha_actual }}">💳 Pagar fecha (test)</a>
+    {% endif %}
 {% endif %}
+
+
+
 {% if fecha_actual and min_fecha and fecha_actual > min_fecha %}
     <a href="/matches/{{fecha_actual - 1}}">⬅️</a>
 {% else %}
