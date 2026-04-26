@@ -1,7 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
 <h2>Pagos</h2>
 
-{% for p in pagos %}
-    <div>
-        {{p[0]}} - Fecha {{p[1]}} - {{p[2]}}
-    </div>
-{% endfor %}
+{% if pagos %}
+    {% for p in pagos %}
+        <div style="background:#4a1f6b; color:white; padding:10px; margin-bottom:8px; border-radius:6px;">
+            {{p[0]}} pagó fecha {{p[1]}}
+        </div>
+    {% endfor %}
+{% else %}
+    <div>No hay pagos</div>
+{% endif %}
+
+{% endblock %}
