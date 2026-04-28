@@ -56,6 +56,14 @@ def init_db():
         goles_visitante INTEGER
     )
     """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS reset_tokens (
+        email TEXT,
+        token TEXT,
+        created_at INTEGER
+    )
+    """)
     cursor.execute("""
                    CREATE TABLE IF NOT EXISTS payments
                    (
@@ -415,6 +423,11 @@ def index():
         if user and check_password_hash(user[2], password):
             session["user"] = username
             session["is_admin"] = False
+
+            if request.args.get("app") == "1":
+                token = generar_token(username)
+                return redirect(f"/autologin/{token}")
+
             return redirect("/matches")
 
         flash("Usuario o contraseña incorrectos", "error")
@@ -457,6 +470,12 @@ def register():
 
 
         telefono = request.form.get("telefono")
+        email = request.form.get("email")
+        if not email:
+            flash("Email requerido", "error")
+            return redirect("/register")
+
+        email = email.strip().lower()
 
         if not telefono or len(telefono) < 7:
             flash("Teléfono inválido", "error")
@@ -538,8 +557,8 @@ def register():
 
         try:
             cursor.execute(
-                "INSERT INTO users (username, password, avatar, telefono) VALUES (?, ?, ?, ?)",
-                (username, hashed_password, avatar, telefono)
+                "INSERT INTO users (username, password, avatar, telefono, email) VALUES (?, ?, ?, ?, ?)",
+                (username, hashed_password, avatar, telefono, email)
             )
 
             cursor.execute(
@@ -560,6 +579,36 @@ def register():
         return redirect("/matches")
 
     return render_template("register.html")
+
+
+
+@app.route("/autologin/<token>")
+def autologin(token):
+    # validar token (simple por ahora)
+    username = validar_token(token)
+
+    if not username:
+        return "invalid"
+
+    session["user"] = username
+    session["is_admin"] = False
+
+    return redirect("/matches")
+
+
+def generar_token(username):
+    return f"{username}:{int(time.time())}"
+
+def validar_token(token):
+    try:
+        username, ts = token.split(":")
+        if int(time.time()) - int(ts) > 60:
+            return None
+        return username
+    except:
+        return None
+
+
 
 @app.route("/admin/reset_torneo", methods=["POST"])
 def reset_torneo():
@@ -1140,11 +1189,133 @@ def reset_results():
 # =========================
 # LOGOUT
 # =========================
+
+@app.route("/reset/<token>", methods=["GET", "POST"])
+def reset(token):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT email, created_at FROM reset_tokens WHERE token=?",
+        (token,)
+    )
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return "Token inválido"
+
+    email, created_at = row
+
+    # 🔥 expiración 1 hora
+    if int(time.time()) - created_at > 3600:
+        cursor.execute("DELETE FROM reset_tokens WHERE token=?", (token,))
+        conn.commit()
+        conn.close()
+        return "Token expirado"
+
+    if request.method == "POST":
+        password = request.form["password"]
+
+        if len(password) < 8:
+            conn.close()
+            flash("Mínimo 8 caracteres", "error")
+            return redirect(request.url)
+
+        hashed = generate_password_hash(password)
+
+        cursor.execute(
+            "UPDATE users SET password=? WHERE email=?",
+            (hashed, email)
+        )
+
+        # 🔥 borrar token usado
+        cursor.execute("DELETE FROM reset_tokens WHERE token=?", (token,))
+
+        conn.commit()
+        conn.close()
+
+        flash("Contraseña actualizada", "success")
+        return redirect("/")
+
+    conn.close()
+    return render_template("reset.html")
+
+
+
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect("/")
+import smtplib
+from email.mime.text import MIMEText
+@app.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "POST":
+        email = request.form["email"].strip().lower()
 
+        conn = get_db()
+        cursor = conn.cursor()
 
+        cursor.execute("SELECT 1 FROM users WHERE email=?", (email,))
+        if not cursor.fetchone():
+            conn.close()
+            flash("Si el email existe, te enviamos instrucciones", "success")
+            return redirect("/forgot_password")
+
+        # 🔥 generar token
+        token = os.urandom(24).hex()
+        now = int(time.time())
+
+        # 🔥 limpiar tokens viejos (1 hora)
+        cursor.execute("DELETE FROM reset_tokens WHERE created_at < ?", (now - 3600,))
+
+        # 🔥 guardar token
+        cursor.execute(
+            "INSERT INTO reset_tokens (email, token, created_at) VALUES (?, ?, ?)",
+            (email, token, now)
+        )
+
+        conn.commit()
+        conn.close()
+
+        link = f"https://penca-tuerta.onrender.com/reset/{token}"
+
+        enviar_mail(
+            email,
+            "Recuperar contraseña",
+            f"Entrá acá para cambiar tu contraseña:\n\n{link}\n\nExpira en 1 hora."
+        )
+
+        flash("Te enviamos un mail para recuperar la contraseña", "success")
+        return redirect("/")
+
+    return render_template("forgot_password.html")
+
+def enviar_mail(destino, asunto, cuerpo):
+    remitente = os.getenv("MAIL_USER")
+    password = os.getenv("MAIL_PASS")
+
+    msg = MIMEText(cuerpo)
+    msg["Subject"] = asunto
+    msg["From"] = remitente
+    msg["To"] = destino
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(remitente, password)
+        server.send_message(msg)
+
+        
+@app.route("/fix_db")
+def fix_db():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN email TEXT")
+        conn.commit()
+        return "OK"
+    except Exception as e:
+        return str(e)
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
