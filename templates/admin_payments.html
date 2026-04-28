@@ -6,7 +6,19 @@
 {% if pagos %}
     {% for p in pagos %}
         <div style="background:#4a1f6b; color:white; padding:10px; margin-bottom:8px; border-radius:6px;">
-            {{p[0]}} pagó fecha {{p[1]}}
+
+            <div>
+                <b>{{ p[0] }}</b> pagó fecha {{ p[1] }}
+            </div>
+
+            {% if p[3] %}
+                <div style="font-size:12px;">📱 {{ p[3] }}</div>
+            {% endif %}
+
+            {% if p[4] %}
+                <div style="font-size:12px;">✉️ {{ p[4] }}</div>
+            {% endif %}
+
         </div>
     {% endfor %}
 {% else %}

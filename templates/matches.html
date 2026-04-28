@@ -7,7 +7,7 @@
     <span>Pagado ✅</span>
 {% else %}
     {% if payments_enabled and not is_admin_user %}
-        <a href="/crear_pago/{{ fecha_actual }}">💳 Pagar</a>
+        <a href="/crear_pago/{{ fecha_actual }}">💳 Pagar esta fecha</a>
     {% endif %}
 {% endif %}
 
@@ -21,10 +21,25 @@
 <b>
     {% if fecha_actual %}
         Fecha {{fecha_actual}}
+    </b>
+    {% if not pago_ok %}
+
+<div style="
+    background:#ffdede;
+    color:#5a2a83;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:10px;
+    text-align:center;
+    font-weight:bold;
+">
+    ⚠️ Para participar en esta fecha tenés que pagar primero
+</div>
+{% endif %}
     {% else %}
         Sin partidos cargados
     {% endif %}
-</b>
+
 
 {% if fecha_actual and max_fecha and fecha_max_permitida and fecha_actual < max_fecha and fecha_actual < fecha_max_permitida %}
     <a href="/matches/{{fecha_actual + 1}}">➡️</a>
@@ -144,11 +159,22 @@
 
     </div>
 
-    <button type="submit"
-            {% if m[3] and now >= m[3] %}disabled{% endif %}
-            style="margin-top:12px; width:100%; padding:10px; border:none; border-radius:5px; background:white; color:#5a2a83; font-weight:bold;">
+<button type="submit"
+    {% if not pago_ok %}onclick="return false;"{% endif %}
+    style="margin-top:12px; width:100%; padding:10px; border:none; border-radius:5px;
+    {% if not pago_ok %}
+        background:#ccc; color:#666;
+    {% else %}
+        background:white; color:#5a2a83;
+    {% endif %}
+    font-weight:bold;">
+
+    {% if not pago_ok %}
+        💳 Pagar primero
+    {% else %}
         Guardar predicción
-    </button>
+    {% endif %}
+</button>
 
 </form>
 

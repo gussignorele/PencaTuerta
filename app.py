@@ -764,6 +764,7 @@ def predict():
         # 🔥 BLOQUEO POR PAGO
         if not puede_jugar(user, fecha_num):
             conn.close()
+            flash("Para guardar tu predicción tenés que pagar esta fecha", "error")
             return redirect(f"/crear_pago/{fecha_num}")
 
         # 🔒 BLOQUEO POR TIEMPO
@@ -819,11 +820,11 @@ def admin_payments():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT user, fecha_num, status
-        FROM payments
-        ORDER BY fecha_num DESC
+        SELECT p.user, p.fecha_num, p.status, u.telefono, u.email
+        FROM payments p
+        LEFT JOIN users u ON p.user = u.username
+        ORDER BY p.fecha_num DESC
     """)
-
     pagos = cursor.fetchall()
 
     conn.close()
@@ -1261,7 +1262,7 @@ def forgot_password():
         cursor.execute("SELECT 1 FROM users WHERE email=?", (email,))
         if not cursor.fetchone():
             conn.close()
-            flash("Si el email existe, te enviamos instrucciones", "success")
+            flash("Te enviamos las instrucciones al mail", "success")
             return redirect("/forgot_password")
 
         # 🔥 generar token
