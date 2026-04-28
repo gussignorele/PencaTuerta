@@ -3,26 +3,65 @@
 
 <h2>Pagos</h2>
 
+<form method="get" style="margin-bottom:15px; text-align:center;">
+    <select name="fecha" onchange="this.form.submit()" style="
+        padding:8px;
+        border-radius:6px;
+        border:none;
+    ">
+        <option value="">Todas las fechas</option>
+
+        {% for f in fechas %}
+            <option value="{{f}}" {% if fecha_actual and f|string == fecha_actual %}selected{% endif %}>
+                Fecha {{f}}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
 {% if pagos %}
-    {% for p in pagos %}
-        <div style="background:#4a1f6b; color:white; padding:10px; margin-bottom:8px; border-radius:6px;">
 
-            <div>
-                <b>{{ p[0] }}</b> pagó fecha {{ p[1] }}
-            </div>
+<div style="overflow-x:auto;">
+<table style="
+    width:100%;
+    border-collapse:collapse;
+    background:#4a1f6b;
+    color:white;
+    border-radius:8px;
+    overflow:hidden;
+">
 
-            {% if p[3] %}
-                <div style="font-size:12px;">📱 {{ p[3] }}</div>
-            {% endif %}
+    <thead style="background:#3a1853;">
+        <tr>
+            <th style="padding:10px; text-align:left;">Usuario</th>
+            <th style="padding:10px;">Fecha</th>
+            <th style="padding:10px;">Teléfono</th>
+            <th style="padding:10px;">Email</th>
+        </tr>
+    </thead>
 
-            {% if p[4] %}
-                <div style="font-size:12px;">✉️ {{ p[4] }}</div>
-            {% endif %}
+    <tbody>
+        {% for p in pagos %}
+        <tr style="border-top:1px solid #5f2a87;">
+            <td style="padding:10px;"><b>{{ p[0] }}</b></td>
+            <td style="padding:10px; text-align:center;">{{ p[1] }}</td>
+            <td style="padding:10px; text-align:center;">
+                {{ p[3] if p[3] else "-" }}
+            </td>
+            <td style="padding:10px; text-align:center;">
+                {{ p[4] if p[4] else "-" }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 
-        </div>
-    {% endfor %}
+</table>
+</div>
+
 {% else %}
-    <div>No hay pagos</div>
+<div style="text-align:center; margin-top:20px;">
+    No hay pagos
+</div>
 {% endif %}
 
 {% endblock %}
