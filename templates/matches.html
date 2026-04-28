@@ -1,53 +1,63 @@
 {% extends "base.html" %}
-
 {% block content %}
 
-<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-{% if pago_ok %}
-    <span>Pagado ✅</span>
-{% else %}
-    {% if payments_enabled and not is_admin_user %}
-        <a href="/crear_pago/{{ fecha_actual }}">💳 Pagar esta fecha</a>
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+
+    <!-- pago -->
+    <div>
+    {% if pago_ok %}
+        <span>Pagado ✅</span>
+    {% else %}
+        {% if payments_enabled and not is_admin_user %}
+            <a href="/crear_pago/{{ fecha_actual }}" style="
+                background:#ffd700;
+                padding:6px 10px;
+                border-radius:6px;
+                text-decoration:none;
+                color:#5a2a83;
+                font-weight:bold;
+            ">
+                💳 Pagar
+            </a>
+        {% endif %}
     {% endif %}
-{% endif %}
+    </div>
 
+    <!-- navegación -->
+    <div>
+        {% if fecha_actual and min_fecha and fecha_actual > min_fecha %}
+            <a href="/matches/{{fecha_actual - 1}}">⬅️</a>
+        {% endif %}
 
-{% if fecha_actual and min_fecha and fecha_actual > min_fecha %}
-    <a href="/matches/{{fecha_actual - 1}}">⬅️</a>
-{% else %}
-    <span></span>
-{% endif %}
+        <b style="margin:0 10px;">
+            {% if fecha_actual %}
+                Fecha {{fecha_actual}}
+            {% else %}
+                Sin partidos
+            {% endif %}
+        </b>
 
-<b>
-    {% if fecha_actual %}
-        Fecha {{fecha_actual}}
-    </b>
-    {% if not pago_ok %}
+        {% if fecha_actual and max_fecha and fecha_max_permitida and fecha_actual < max_fecha and fecha_actual < fecha_max_permitida %}
+            <a href="/matches/{{fecha_actual + 1}}">➡️</a>
+        {% endif %}
+    </div>
 
+</div>
+
+<!-- aviso -->
+{% if not pago_ok %}
 <div style="
-    background:#ffdede;
+    background:#fff3cd;
     color:#5a2a83;
-    padding:10px;
-    border-radius:8px;
+    padding:8px;
+    border-radius:6px;
     margin-bottom:10px;
     text-align:center;
-    font-weight:bold;
+    font-size:13px;
 ">
-    ⚠️ Para participar en esta fecha tenés que pagar primero
+    ⚠️ Tenés que pagar para participar de esta fecha
 </div>
 {% endif %}
-    {% else %}
-        Sin partidos cargados
-    {% endif %}
-
-
-{% if fecha_actual and max_fecha and fecha_max_permitida and fecha_actual < max_fecha and fecha_actual < fecha_max_permitida %}
-    <a href="/matches/{{fecha_actual + 1}}">➡️</a>
-{% else %}
-    <span></span>
-{% endif %}
-
-</div>
 
 {% if not matches %}
 <div style="text-align:center; margin-top:40px;">
@@ -63,230 +73,58 @@
 
 <div style="background:#6c3bb8; color:white; border-radius:10px; padding:15px; margin-bottom:12px;">
 
-<div style="display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; text-align:center;">
-
-    <div>
-        <img src="/static/img/{{ logos.get(m[1], 'default.png') }}" width="32"><br>
-        <div>{{m[1]}}</div>
-    </div>
-
-    <div style="font-weight:bold;">vs</div>
-
-    <div>
-        <img src="/static/img/{{ logos.get(m[2], 'default.png') }}" width="32"><br>
-        <div>{{m[2]}}</div>
-    </div>
-
-</div>
-
-<div style="color:#ddd; font-size:12px; margin-top:5px; text-align:center;">
-    {% if m[3] and m[3]|length >= 16 %}
-        {{ m[3][8:10] }}/{{ m[3][5:7] }} {{ m[3][11:16] }}
-    {% else %}
-        -
-    {% endif %}
-</div>
-
-{% if m[5] is not none and m[6] is not none %}
-<div style="text-align:center; margin-top:5px;">
-    🏁 {{m[5]}} - {{m[6]}}
-</div>
-
-<div style="
-    text-align:center;
-    margin-top:6px;
-    font-size:13px;
-    background:#444;
-    padding:6px;
-    border-radius:6px;
-">
-    🔒 Partido cerrado
-</div>
-{% endif %}
-
-<form action="/predict" method="post" style="margin-top:10px;">
-
-    <!-- 🔥 FIX resultado -->
-    <input type="hidden" name="tiene_resultado"
-           value="{{ 1 if m[5] is not none else 0 }}">
-
-    <input type="hidden" name="match_id" value="{{m[0]}}">
-    <input type="hidden" name="fecha_hora" value="{{m[3]}}">
-
-    <div style="display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; text-align:center; gap:10px; margin-top:8px;">
-
-        <!-- LOCAL -->
-        <div style="display:flex; justify-content:center; align-items:center; gap:5px;">
-            <button type="button"
-                    onclick="change('{{m[0]}}_l', -1)"
-                    {% if m[3] and now >= m[3] %}disabled{% endif %}>-</button>
-
-            <input type="number"
-                   id="{{m[0]}}_l"
-                   name="pred_local"
-                   min="0"
-                   value="{{ m[7] if m[7] is not none else '' }}"
-                   style="width:50px; text-align:center;"
-                   class="{% if m[7] is not none %}filled{% endif %}"
-                   {% if m[3] and now >= m[3] %}disabled{% endif %}>
-
-            <button type="button"
-                    onclick="change('{{m[0]}}_l', 1)"
-                    {% if m[3] and now >= m[3] %}disabled{% endif %}>+</button>
+    <div style="display:grid; grid-template-columns: 1fr auto 1fr; text-align:center;">
+        <div>
+            <img src="/static/img/{{ logos.get(m[1], 'default.png') }}" width="32"><br>
+            {{m[1]}}
         </div>
 
-        <div></div>
+        <div style="font-weight:bold;">vs</div>
 
-        <!-- VISITANTE -->
-        <div style="display:flex; justify-content:center; align-items:center; gap:5px;">
-            <button type="button"
-                    onclick="change('{{m[0]}}_v', -1)"
-                    {% if m[3] and now >= m[3] %}disabled{% endif %}>-</button>
-
-            <input type="number"
-                   id="{{m[0]}}_v"
-                   name="pred_visitante"
-                   min="0"
-                   value="{{ m[8] if m[8] is not none else '' }}"
-                   style="width:50px; text-align:center;"
-                   class="{% if m[8] is not none %}filled{% endif %}"
-                   {% if m[3] and now >= m[3] %}disabled{% endif %}>
-
-            <button type="button"
-                    onclick="change('{{m[0]}}_v', 1)"
-                    {% if m[3] and now >= m[3] %}disabled{% endif %}>+</button>
+        <div>
+            <img src="/static/img/{{ logos.get(m[2], 'default.png') }}" width="32"><br>
+            {{m[2]}}
         </div>
-
     </div>
 
-<button type="submit"
-    {% if not pago_ok %}onclick="return false;"{% endif %}
-    style="margin-top:12px; width:100%; padding:10px; border:none; border-radius:5px;
-    {% if not pago_ok %}
-        background:#ccc; color:#666;
-    {% else %}
-        background:white; color:#5a2a83;
-    {% endif %}
-    font-weight:bold;">
+    <div style="color:#ddd; font-size:12px; margin-top:5px; text-align:center;">
+        {% if m[3] and m[3]|length >= 16 %}
+            {{ m[3][8:10] }}/{{ m[3][5:7] }} {{ m[3][11:16] }}
+        {% else %}
+            -
+        {% endif %}
+    </div>
 
-    {% if not pago_ok %}
-        💳 Pagar primero
-    {% else %}
-        Guardar predicción
-    {% endif %}
-</button>
+    <form action="/predict" method="post" style="margin-top:10px;">
 
-</form>
+        <input type="hidden" name="tiene_resultado" value="{{ 1 if m[5] is not none else 0 }}">
+        <input type="hidden" name="match_id" value="{{m[0]}}">
+        <input type="hidden" name="fecha_hora" value="{{m[3]}}">
+
+        <div style="display:flex; justify-content:space-around; margin-top:8px;">
+            <input type="number" name="pred_local" min="0" value="{{ m[7] if m[7] is not none else '' }}">
+            <input type="number" name="pred_visitante" min="0" value="{{ m[8] if m[8] is not none else '' }}">
+        </div>
+
+        {% if not pago_ok %}
+            <button type="button"
+                onclick="window.location.href='/crear_pago/{{fecha_actual}}'"
+                style="margin-top:12px; width:100%; padding:10px; border:none; border-radius:5px;
+                background:#ffd700; color:#5a2a83; font-weight:bold;">
+                💳 Pagar para guardar
+            </button>
+        {% else %}
+            <button type="submit"
+                style="margin-top:12px; width:100%; padding:10px; border:none; border-radius:5px;
+                background:white; color:#5a2a83; font-weight:bold;">
+                Guardar predicción
+            </button>
+        {% endif %}
+
+    </form>
 
 </div>
+
 {% endfor %}
-
-<!-- 🔥 BOTÓN GUARDAR TODOS -->
-<button id="btnGuardarTodos"
-        type="button"
-        onclick="guardarTodos()"
-        style="width:100%; padding:12px; border:none; border-radius:6px; background:#ddd; color:#5a2a83; font-weight:bold; margin-top:15px;">
-    Guardar todos
-</button>
-
-<div id="statusGuardar" style="text-align:center; margin-top:8px; font-size:13px; color:#ddd;"></div>
-
-<script>
-function change(id, delta) {
-    let input = document.getElementById(id);
-    let value = parseInt(input.value) || 0;
-    value = Math.max(0, value + delta);
-    input.value = value;
-}
-
-// valores iniciales
-const valoresIniciales = {};
-
-document.querySelectorAll('form[action="/predict"]').forEach(form => {
-    const matchId = form.querySelector('input[name="match_id"]').value;
-    const local = form.querySelector('input[name="pred_local"]').value;
-    const visitante = form.querySelector('input[name="pred_visitante"]').value;
-
-    valoresIniciales[matchId] = { local, visitante };
-});
-
-let guardando = false;
-const now = new Date("{{ now }}");
-
-function guardarTodos() {
-
-    if (guardando) return;
-    guardando = true;
-
-    const boton = document.getElementById("btnGuardarTodos");
-    const status = document.getElementById("statusGuardar");
-
-    boton.disabled = true;
-    boton.innerText = "Guardando...";
-    status.innerText = "⏳ Guardando predicciones...";
-
-    const forms = document.querySelectorAll('form[action="/predict"]');
-
-    let promises = [];
-
-    forms.forEach(form => {
-
-        const matchId = form.querySelector('input[name="match_id"]').value;
-        const fecha = form.querySelector('input[name="fecha_hora"]').value;
-        const local = form.querySelector('input[name="pred_local"]').value;
-        const visitante = form.querySelector('input[name="pred_visitante"]').value;
-        const tieneResultado = form.querySelector('input[name="tiene_resultado"]').value;
-
-        if (
-            local !== "" &&
-            visitante !== "" &&
-            now < new Date(fecha) &&
-            tieneResultado == "0" &&
-            (
-                local != valoresIniciales[matchId].local ||
-                visitante != valoresIniciales[matchId].visitante
-            )
-        ) {
-            promises.push(
-                fetch("/predict", {
-                    method: "POST",
-                    body: new FormData(form)
-                })
-            );
-        }
-    });
-    if (promises.length === 0) {
-        status.innerText = "ℹ️ No hay cambios para guardar";
-        boton.disabled = false;
-        boton.innerText = "Guardar todos";
-        guardando = false;
-        return;
-    }
-    Promise.all(promises)
-        .then(() => {
-            status.innerText = "✅ Guardado";
-
-            // 🔥 aplicar verde
-            document.querySelectorAll('form[action="/predict"]').forEach(form => {
-                const inputLocal = form.querySelector('input[name="pred_local"]');
-                const inputVisitante = form.querySelector('input[name="pred_visitante"]');
-
-                if (inputLocal.value !== "") {
-                    inputLocal.classList.add("filled");
-                }
-
-                if (inputVisitante.value !== "") {
-                    inputVisitante.classList.add("filled");
-                }
-            });
-
-            window.scrollTo({ top: 0, behavior: "smooth" });
-
-            setTimeout(() => {
-                status.innerText = "";
-            }, 2000);
-        })
-}
-</script>
 
 {% endblock %}
