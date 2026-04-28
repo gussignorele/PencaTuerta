@@ -1305,7 +1305,7 @@ def enviar_mail(destino, asunto, cuerpo):
         server.login(remitente, password)
         server.send_message(msg)
 
-        
+
 @app.route("/fix_db")
 def fix_db():
     conn = get_db()
