@@ -103,12 +103,13 @@ def init_db():
                    """)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        password TEXT,
-        avatar TEXT,
-        telefono TEXT
-    )
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE,
+    password TEXT,
+    avatar TEXT,
+    telefono TEXT,
+    email TEXT
+)
     """)
 
     conn.commit()
@@ -1305,7 +1306,7 @@ def enviar_mail(destino, asunto, cuerpo):
         server.login(remitente, password)
         server.send_message(msg)
 
-
+"""
 @app.route("/fix_db")
 def fix_db():
     conn = get_db()
@@ -1317,5 +1318,7 @@ def fix_db():
         return "OK"
     except Exception as e:
         return str(e)
+"""
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
