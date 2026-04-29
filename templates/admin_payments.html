@@ -24,11 +24,36 @@
 <div class="payments-container">
     {% for p in pagos %}
         <div class="payment-card">
-            <div class="payment-user">{{ p[1] }}</div>
-            <div class="payment-fecha">Fecha {{ p[2] }}</div>
-            <div class="payment-status status-{{ p[3] }}">
-                {{ p[3] }}
+
+            <!-- usuario -->
+            <div class="payment-user">
+                {{ p[0] }}
             </div>
+
+            <!-- fecha -->
+            <div class="payment-fecha">
+                Fecha {{ p[1] }}
+            </div>
+
+            <!-- estado -->
+            <div class="payment-status status-{{ p[2] }}">
+                {% if p[2] == 'approved' %}
+                    ✅ Aprobado
+                {% else %}
+                    {{ p[2] }}
+                {% endif %}
+            </div>
+
+            <!-- teléfono -->
+            <div style="font-size:12px; color:#aaa; margin-top:6px;">
+                📱 {{ p[3] or '-' }}
+            </div>
+
+            <!-- email -->
+            <div style="font-size:12px; color:#aaa;">
+                ✉️ {{ p[4] or '-' }}
+            </div>
+
         </div>
     {% endfor %}
 </div>
