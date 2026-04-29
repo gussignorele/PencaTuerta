@@ -21,20 +21,16 @@
 
 {% if pagos %}
 
-<div style="overflow-x:auto;">
-
-
 <div class="payments-container">
-    {% for user, fecha, status in pagos %}
+    {% for p in pagos %}
         <div class="payment-card">
-            <div class="payment-user">{{ user }}</div>
-            <div class="payment-fecha">Fecha {{ fecha }}</div>
-            <div class="payment-status status-{{ status }}">
-                {{ status }}
+            <div class="payment-user">{{ p[1] }}</div>
+            <div class="payment-fecha">Fecha {{ p[2] }}</div>
+            <div class="payment-status status-{{ p[3] }}">
+                {{ p[3] }}
             </div>
         </div>
     {% endfor %}
-</div>
 </div>
 
 {% else %}
