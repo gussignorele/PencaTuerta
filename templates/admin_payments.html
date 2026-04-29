@@ -22,40 +22,19 @@
 {% if pagos %}
 
 <div style="overflow-x:auto;">
-<table style="
-    width:100%;
-    border-collapse:collapse;
-    background:#4a1f6b;
-    color:white;
-    border-radius:8px;
-    overflow:hidden;
-">
 
-    <thead style="background:#3a1853;">
-        <tr>
-            <th style="padding:10px; text-align:left;">Usuario</th>
-            <th style="padding:10px;">Fecha</th>
-            <th style="padding:10px;">Teléfono</th>
-            <th style="padding:10px;">Email</th>
-        </tr>
-    </thead>
 
-    <tbody>
-        {% for p in pagos %}
-        <tr style="border-top:1px solid #5f2a87;">
-            <td style="padding:10px;"><b>{{ p[0] }}</b></td>
-            <td style="padding:10px; text-align:center;">{{ p[1] }}</td>
-            <td style="padding:10px; text-align:center;">
-                {{ p[3] if p[3] else "-" }}
-            </td>
-            <td style="padding:10px; text-align:center;">
-                {{ p[4] if p[4] else "-" }}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-
-</table>
+<div class="payments-container">
+    {% for user, fecha, status in pagos %}
+        <div class="payment-card">
+            <div class="payment-user">{{ user }}</div>
+            <div class="payment-fecha">Fecha {{ fecha }}</div>
+            <div class="payment-status status-{{ status }}">
+                {{ status }}
+            </div>
+        </div>
+    {% endfor %}
+</div>
 </div>
 
 {% else %}

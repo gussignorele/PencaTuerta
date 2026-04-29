@@ -10,7 +10,7 @@
     {% else %}
         {% if payments_enabled and not is_admin_user %}
             <a href="/crear_pago/{{ fecha_actual }}" style="color:white;">
-                💳 Pagar esta fecha
+                💳 Pagar fecha
             </a>
         {% endif %}
     {% endif %}
@@ -37,10 +37,19 @@
 
 </div>
 
-<!-- aviso chico -->
-{% if not pago_ok %}
-<div style="text-align:center; font-size:12px; margin-bottom:10px; color:#ddd;">
-    ⚠️ Para jugar esta fecha tenés que pagar
+<!-- 🔥 MENSAJE PRINCIPAL (solo arriba) -->
+{% if not pago_ok and payments_enabled and not is_admin_user %}
+<div style="
+    text-align:center;
+    font-size:13px;
+    margin-bottom:12px;
+    color:#ddd;
+    background:#1e293b;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #334155;
+">
+    💳 Para poder jugar esta fecha tenés que pagar {{ price }}
 </div>
 {% endif %}
 
@@ -126,7 +135,7 @@
     <button type="button"
         onclick="window.location.href='/crear_pago/{{fecha_actual}}'"
         style="margin-top:12px; width:100%; padding:10px; border:none; border-radius:5px; background:#ccc; color:#333;">
-        💳 Pagar primero
+        💳 Pagar fecha
     </button>
 {% else %}
     <button type="submit"

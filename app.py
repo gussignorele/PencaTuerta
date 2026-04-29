@@ -703,7 +703,8 @@ def matches(fecha_sel=None):
         now=datetime.now().isoformat(),
         pago_ok=pago_ok,
         payments_enabled=payments_enabled,
-        is_admin_user=is_admin_user
+        is_admin_user=is_admin_user,
+        price=PRICE_PER_FECHA
     )
 
 @app.route("/admin/reset_scores", methods=["POST"])
