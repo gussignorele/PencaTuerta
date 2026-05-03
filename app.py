@@ -292,6 +292,8 @@ def update_avatar():
     conn.close()
     flash("Avatar actualizado correctamente", "success")
     return redirect(f"/user/{user}")
+
+
 @app.route("/admin/delete_match/<int:match_id>", methods=["POST"])
 def delete_match(match_id):
     if not is_admin():
@@ -310,6 +312,8 @@ def delete_match(match_id):
     conn.close()
 
     return redirect(request.referrer or "/admin/matches")
+
+
 @app.route("/user/<username>")
 def user_detail(username):
     conn = get_db()
@@ -358,7 +362,7 @@ def user_detail(username):
     rows = cursor.fetchall()
 
     from datetime import datetime
-    now = datetime.now()
+    now = now_uy()
 
     usuario_logueado = session.get("user")
 
@@ -373,7 +377,7 @@ def user_detail(username):
         fecha_dt = None
         if fecha_hora:
             try:
-                fecha_dt = datetime.fromisoformat(fecha_hora)
+                fecha_dt = datetime.fromisoformat(fecha_hora).replace(tzinfo=None)
             except:
                 fecha_dt = None  # por si viene raro
 
@@ -731,8 +735,6 @@ def predict():
     if "user" not in session:
         return redirect("/")
 
-
-
     user = session["user"]
     match_id = int(request.form["match_id"])
 
@@ -760,7 +762,7 @@ def predict():
 
     row = cursor.fetchone()
     if row:
-        fecha_partido = datetime.fromisoformat(row[0])
+        fecha_partido = datetime.fromisoformat(row[0]).replace(tzinfo=None)
         fecha_num = row[1]
 
         # 🔥 BLOQUEO POR PAGO
@@ -814,6 +816,8 @@ def nuevo_torneo():
 
     flash(f"Nuevo torneo iniciado (desde fecha {max_fecha + 1})", "success")
     return redirect("/admin")
+
+
 @app.route("/admin/payments")
 def admin_payments():
     conn = get_db()
@@ -875,7 +879,7 @@ def ranking():
     ranking = sorted(ranking, key=lambda x: (-x[2], x[0]))
 
     from datetime import datetime
-    now = datetime.now()
+    now = now_uy()
 
     # 🔹 saber si la fecha global terminó (lo que ya tenías)
     cursor.execute("SELECT MAX(fecha_hora) FROM matches")
@@ -884,7 +888,7 @@ def ranking():
     fecha_jugada = False
     if ultima_fecha:
         try:
-            fecha_dt = datetime.fromisoformat(ultima_fecha)
+            fecha_dt = datetime.fromisoformat(ultima_fecha).replace(tzinfo=None)
             fecha_jugada = now > fecha_dt
         except:
             pass
@@ -907,7 +911,7 @@ def ranking():
     fecha_estado = "En juego"
     if fecha_max:
         try:
-            fecha_dt = datetime.fromisoformat(fecha_max)
+            fecha_dt = datetime.fromisoformat(fecha_max).replace(tzinfo=None)
             if now > fecha_dt:
                 fecha_estado = "Finalizada"
         except:
