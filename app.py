@@ -650,7 +650,7 @@ def matches(fecha_sel=None):
         SELECT MIN(fecha_num)
         FROM matches
         WHERE fecha_hora > ?
-    """, (datetime.now().isoformat(),))
+    """, (now_uy().isoformat(),))
 
     row = cursor.fetchone()
     fecha_actual = row[0] if row else None
@@ -669,7 +669,7 @@ def matches(fecha_sel=None):
         SELECT MIN(fecha_num)
         FROM matches
         WHERE fecha_hora > ?
-    """, (datetime.now().isoformat(),))
+    """, (now_uy().isoformat(),))
 
     futura = cursor.fetchone()[0]
     fecha_max_permitida = futura if futura else fecha_actual
@@ -688,6 +688,7 @@ def matches(fecha_sel=None):
     matches_data = cursor.fetchall()
 
     conn.close()
+    now = now_uy().isoformat()
     pago_ok = pago_habilitado(user, fecha_actual)
     payments_enabled = PAYMENTS_ENABLED
     is_admin_user = user in ADMINS
@@ -700,7 +701,7 @@ def matches(fecha_sel=None):
         min_fecha=min_fecha,
         max_fecha=max_fecha,
         fecha_max_permitida=fecha_max_permitida,
-        now=datetime.now().isoformat(),
+        now=now,
         pago_ok=pago_ok,
         payments_enabled=payments_enabled,
         is_admin_user=is_admin_user,
@@ -769,7 +770,8 @@ def predict():
             return redirect(f"/crear_pago/{fecha_num}")
 
         # 🔒 BLOQUEO POR TIEMPO
-        if datetime.now() >= fecha_partido:
+        # if datetime.now() >= fecha_partido:
+        if now_uy() >= fecha_partido:
             conn.close()
             flash("El partido ya comenzó", "error")
             return redirect(request.referrer or "/matches")
@@ -972,7 +974,10 @@ GROUP BY p.user
         top3_fecha=top3_fecha,
         resto_fecha=resto_fecha
     )
+from datetime import datetime, timedelta
 
+def now_uy():
+    return datetime.utcnow() - timedelta(hours=3)
 # =========================
 # ADMIN DASHBOARD
 # =========================

@@ -37,7 +37,6 @@
 
 </div>
 
-<!-- 🔥 MENSAJE PRINCIPAL (solo arriba) -->
 {% if not pago_ok and payments_enabled and not is_admin_user %}
 <div style="
     text-align:center;
@@ -64,6 +63,8 @@
 </div>
 
 {% for m in matches %}
+
+{% set bloqueado = now >= m[3] %}
 
 <div style="background:#6c3bb8; color:white; border-radius:10px; padding:15px; margin-bottom:12px;">
 
@@ -93,40 +94,40 @@
 
 <form action="/predict" method="post" style="margin-top:10px;">
 
-<input type="hidden" name="tiene_resultado" value="{{ 1 if m[5] is not none else 0 }}">
 <input type="hidden" name="match_id" value="{{m[0]}}">
-<input type="hidden" name="fecha_hora" value="{{m[3]}}">
 
 <div style="display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; text-align:center; gap:10px; margin-top:8px;">
 
     <!-- LOCAL -->
     <div style="display:flex; justify-content:center; align-items:center; gap:5px;">
-        <button type="button" onclick="change('{{m[0]}}_l', -1)">-</button>
+        <button type="button" onclick="change('{{m[0]}}_l', -1)" {% if bloqueado %}disabled{% endif %}>-</button>
 
         <input type="number"
                id="{{m[0]}}_l"
                name="pred_local"
                min="0"
                value="{{ m[7] if m[7] is not none else '' }}"
-               style="width:50px; text-align:center;">
+               style="width:50px; text-align:center;"
+               {% if bloqueado %}disabled{% endif %}>
 
-        <button type="button" onclick="change('{{m[0]}}_l', 1)">+</button>
+        <button type="button" onclick="change('{{m[0]}}_l', 1)" {% if bloqueado %}disabled{% endif %}>+</button>
     </div>
 
     <div></div>
 
     <!-- VISITANTE -->
     <div style="display:flex; justify-content:center; align-items:center; gap:5px;">
-        <button type="button" onclick="change('{{m[0]}}_v', -1)">-</button>
+        <button type="button" onclick="change('{{m[0]}}_v', -1)" {% if bloqueado %}disabled{% endif %}>-</button>
 
         <input type="number"
                id="{{m[0]}}_v"
                name="pred_visitante"
                min="0"
                value="{{ m[8] if m[8] is not none else '' }}"
-               style="width:50px; text-align:center;">
+               style="width:50px; text-align:center;"
+               {% if bloqueado %}disabled{% endif %}>
 
-        <button type="button" onclick="change('{{m[0]}}_v', 1)">+</button>
+        <button type="button" onclick="change('{{m[0]}}_v', 1)" {% if bloqueado %}disabled{% endif %}>+</button>
     </div>
 
 </div>
@@ -138,10 +139,16 @@
         💳 Pagar fecha
     </button>
 {% else %}
+    {% if not bloqueado %}
     <button type="submit"
         style="margin-top:12px; width:100%; padding:10px; border:none; border-radius:5px; background:white; color:#5a2a83;">
         Guardar predicción
     </button>
+    {% else %}
+    <div style="margin-top:12px; text-align:center; font-size:12px; color:#ddd;">
+        Partido comenzado
+    </div>
+    {% endif %}
 {% endif %}
 
 </form>
@@ -153,6 +160,7 @@
 <script>
 function change(id, delta) {
     let input = document.getElementById(id);
+    if (input.disabled) return;
     let value = parseInt(input.value) || 0;
     value = Math.max(0, value + delta);
     input.value = value;
