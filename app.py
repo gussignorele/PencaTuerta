@@ -137,8 +137,8 @@ def parse_int(value, default=0):
 
 
 def is_admin():
-    user = session.get("user", "")
-    return user.strip().lower() == "gsignorele" or session.get("is_admin") == True
+    user = session.get("user", "").strip().lower()
+    return user in ADMINS or session.get("is_admin") == True
 
 def pago_habilitado(user, fecha):
     user = user.strip().lower()
@@ -446,19 +446,21 @@ def index():
 # =========================
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
-    if session.get("user", "").strip().lower() == "gsignorele":
-        session["is_admin"] = True
+
+    if is_admin():
         return redirect("/admin")
+
     if request.method == "POST":
+
         password = request.form.get("password")
 
         if password == ADMIN_PASSWORD:
             session["is_admin"] = True
             return redirect("/admin")
-        else:
-            flash("Clave admin incorrecta", "error")
 
-    return render_template("admin_login.html")
+        flash("Clave admin incorrecta", "error")
+
+    return render_template("admin_login.html")  
 
 
 # =========================
@@ -987,7 +989,7 @@ def now_uy():
 # =========================
 @app.route("/admin")
 def admin():
-    if session.get("user") != "gsignorele" and not session.get("is_admin"):
+    if not is_admin():
         return redirect("/admin/login")
 
     conn = get_db()
