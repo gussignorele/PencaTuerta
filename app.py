@@ -25,7 +25,7 @@ MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
-ADMINS = {"gsignorele", "otro_admin"}
+ADMINS = {"gsignorele", "alejo iglesias", "pablo"}
 PAYMENTS_ENABLED = os.getenv("PAYMENTS_ENABLED", "false").lower() == "true"
 PRICE_PER_FECHA = int(os.getenv("PRICE_PER_FECHA", "150"))
 

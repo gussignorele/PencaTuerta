@@ -86,5 +86,17 @@
 </div>
 
 </div>
+<script>
+function togglePassword(id, el) {
+    const input = document.getElementById(id);
 
+    if (input.type === "password") {
+        input.type = "text";
+        el.textContent = "🙈"; // cambia icono
+    } else {
+        input.type = "password";
+        el.textContent = "👁️";
+    }
+}
+</script>
 {% endblock %}
