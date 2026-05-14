@@ -366,7 +366,8 @@ def user_detail(username):
 
     usuario_logueado = session.get("user")
 
-    es_admin = session.get("is_admin")
+    #es_admin = session.get("is_admin")
+    es_admin = is_admin()
 
     rows_con_puntos = []
 
