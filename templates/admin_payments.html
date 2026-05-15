@@ -2,7 +2,26 @@
 {% block content %}
 
 <h2>Pagos</h2>
+<div style="
+     margin-bottom:12px;
+    border-radius:10px;
+    padding:10px;
+    text-align:center;
+    font-size:15px;
+    font-weight:bold;
+">
 
+    {% if fecha_actual %}
+        👥 Pagadores Fecha {{fecha_actual}}:
+    {% else %}
+        👥 Total pagadores:
+    {% endif %}
+
+    <span style="color:#22c55e;">
+        {{ pagos|length }}
+    </span>
+
+</div>
 <form method="get" style="margin-bottom:15px; text-align:center;">
     <select name="fecha" onchange="this.form.submit()" style="
         padding:8px;
