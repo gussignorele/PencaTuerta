@@ -313,7 +313,56 @@ def delete_match(match_id):
 
     return redirect(request.referrer or "/admin/matches")
 
+@app.route("/admin/reset_user_password", methods=["GET", "POST"])
+def admin_reset_user_password():
 
+    if session.get("user") != "gsignorele":
+        return redirect("/")
+
+    if request.method == "POST":
+
+        username = request.form["username"].strip().lower()
+        nueva = request.form["password"]
+
+        if len(nueva) < 4:
+            flash("Contraseña muy corta", "error")
+            return redirect("/admin/reset_user_password")
+
+        hashed = generate_password_hash(nueva)
+
+        conn = get_db()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE users
+            SET password = ?
+            WHERE username = ?
+        """, (hashed, username))
+
+        conn.commit()
+        conn.close()
+
+        flash(f"Password cambiada para {username}", "success")
+
+        return redirect("/admin")
+
+    return """
+    <h2>Reset Password Usuario</h2>
+
+    <form method="POST">
+
+        Usuario:<br>
+        <input name="username"><br><br>
+
+        Nueva password:<br>
+        <input name="password"><br><br>
+
+        <button type="submit">
+            Cambiar
+        </button>
+
+    </form>
+    """
 @app.route("/user/<username>")
 def user_detail(username):
     conn = get_db()
