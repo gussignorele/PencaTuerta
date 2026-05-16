@@ -709,26 +709,22 @@ def matches(fecha_sel=None):
     conn = get_db()
     cursor = conn.cursor()
 
-    # 🔥 buscar primera fecha NO finalizada
+    # 🔥 fecha actual = última fecha que ya empezó
     cursor.execute("""
         SELECT fecha_num
         FROM matches
-        WHERE goles_local IS NULL
-           OR goles_visitante IS NULL
-        ORDER BY fecha_num
+        WHERE datetime(fecha_hora) <= datetime(?)
+        ORDER BY fecha_num DESC
         LIMIT 1
-    """)
+    """, (now_uy().isoformat(),))
 
     row = cursor.fetchone()
 
-    # si hay fecha en juego / pendiente
     if row:
         fecha_actual = row[0]
-
-    # si ya terminó todo el torneo
     else:
         cursor.execute("""
-            SELECT MAX(fecha_num)
+            SELECT MIN(fecha_num)
             FROM matches
         """)
         fecha_actual = cursor.fetchone()[0]
@@ -979,8 +975,25 @@ def ranking():
     fecha_sel = request.args.get("fecha", type=int)
 
     if not fecha_sel:
-        cursor.execute("SELECT MAX(fecha_num) FROM matches")
-        fecha_sel = cursor.fetchone()[0]
+
+        cursor.execute("""
+            SELECT fecha_num
+            FROM matches
+            WHERE datetime(fecha_hora) <= datetime(?)
+            ORDER BY fecha_num DESC
+            LIMIT 1
+        """, (now_uy().isoformat(),))
+
+        row = cursor.fetchone()
+
+        if row:
+            fecha_sel = row[0]
+        else:
+            cursor.execute("""
+                SELECT MIN(fecha_num)
+                FROM matches
+            """)
+            fecha_sel = cursor.fetchone()[0]
 
     # 🔹 estado de la fecha
     cursor.execute("""
