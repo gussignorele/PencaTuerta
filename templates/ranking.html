@@ -173,7 +173,7 @@
                 {% endif %}
             </div>
 
-        {% if user == current_user or fecha_jugada %}
+       {% if user == current_user or fecha_jugada or is_admin %}
         </a>
         {% else %}
         </div>

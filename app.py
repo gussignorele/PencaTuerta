@@ -308,7 +308,7 @@ def delete_match(match_id):
     cursor = conn.cursor()
 
     # borrar predicciones asociadas
-    cursor.execute("DELETE FROM prediction WHERE match_id=?", (match_id,))
+    #cursor.execute("DELETE FROM prediction WHERE match_id=?", (match_id,))
 
     # borrar partido
     cursor.execute("DELETE FROM matches WHERE id=?", (match_id,))
@@ -317,7 +317,35 @@ def delete_match(match_id):
     conn.close()
 
     return redirect(request.referrer or "/admin/matches")
+@app.route("/fix_points")
+def fix_points():
+    if not is_admin():
+        return redirect("/admin/login")
+    conn = get_db()
+    cursor = conn.cursor()
 
+    cursor.execute("""
+        UPDATE scores
+        SET puntos = puntos + 3
+        WHERE user='mariano'
+    """)
+
+    cursor.execute("""
+        UPDATE scores
+        SET puntos = puntos + 1
+        WHERE user='rafael'
+    """)
+
+    cursor.execute("""
+        UPDATE scores
+        SET puntos = puntos + 1
+        WHERE user='seba silva'
+    """)
+
+    conn.commit()
+    conn.close()
+
+    return "OK"
 @app.route("/admin/reset_user_password", methods=["GET", "POST"])
 def admin_reset_user_password():
 
@@ -935,6 +963,8 @@ def admin_payments():
 
 @app.route("/debug_matches")
 def debug_matches():
+    if not is_admin():
+        return redirect("/admin/login")
 
     conn = get_db()
     cursor = conn.cursor()
