@@ -94,7 +94,7 @@
 
 {% for user, avatar, pts in ranking %}
 
-    <div class="{% if user == current_user or fecha_jugada %}unlock{% endif %}"
+    <div class="{% if user == current_user or fecha_jugada or is_admin %}unlock{% endif %}"
          style="
             padding:15px;
             border-radius:10px;
@@ -110,7 +110,7 @@
             {% endif %}
          ">
 
-        {% if user == current_user or fecha_jugada %}
+        {% if user == current_user or fecha_jugada or is_admin %}
         <a href="/user/{{user}}" style="
             display:flex;
             align-items:center;

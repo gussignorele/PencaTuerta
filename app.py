@@ -1110,7 +1110,8 @@ GROUP BY p.user
         fecha_jugada=fecha_jugada,
         tabla_fecha=tabla_fecha,
         top3_fecha=top3_fecha,
-        resto_fecha=resto_fecha
+        resto_fecha=resto_fecha,
+        is_admin=is_admin()
     )
 from datetime import datetime, timedelta
 
