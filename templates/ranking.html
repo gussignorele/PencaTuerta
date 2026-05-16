@@ -142,7 +142,8 @@
         {% endif %}
 
             <!-- medalla -->
-             <div style="font-size:20px; width:30px;"> {% if pos == 1 %} 🥇 {% elif pos == 2 %} 🥈 {% elif pos == 3 %} 🥉 {% else %} {{pos}}. {% endif %} </div>
+            <div style="font-size:20px; width:30px;"> {% if pos == 1 %} 🥇 {% elif pos == 2 %} 🥈 {% elif pos == 3 %} 🥉 {% else %} {{pos}}. {% endif %} </div>
+
 
             <!-- avatar (FIX COMPLETO) -->
             <img src="{{ avatar if avatar.startswith('/') else '/static/img/' + avatar }}"
