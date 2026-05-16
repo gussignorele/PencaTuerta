@@ -1218,7 +1218,12 @@ def admin_results():
 
     if request.method == "POST":
         match_id = request.form["match_id"]
+        cursor.execute(
+            "SELECT fecha_num FROM matches WHERE id=?",
+            (match_id,)
+        )
 
+        fecha_sel = cursor.fetchone()[0]
         gl = request.form.get("goles_local")
         gv = request.form.get("goles_visitante")
 
