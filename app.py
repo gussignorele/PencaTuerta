@@ -1111,6 +1111,17 @@ GROUP BY p.user
                    """, (fecha_sel,))
 
     pts_fecha = {u: pts for u, pts in cursor.fetchall()}
+
+    # 🔥 fix temporal partido eliminado
+    fix_manual_fecha = {
+        "mariano": 3,
+        "rafael": 1,
+        "seba silva": 1
+    }
+
+    for u, pts in fix_manual_fecha.items():
+        pts_fecha[u] = pts_fecha.get(u, 0) + pts
+    # ----------------
     tabla_fecha = sorted(pts_fecha.items(), key=lambda x: -x[1])
 
     top3_fecha = tabla_fecha[:3]
