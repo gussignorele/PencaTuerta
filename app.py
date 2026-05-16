@@ -1155,9 +1155,12 @@ GROUP BY p.user
         is_admin=is_admin()
     )
 from datetime import datetime, timedelta
+
+
 @app.route("/fix_scores")
 def fix_scores():
-
+    if not is_admin():
+        return redirect("/admin/login")
     conn = get_db()
     cursor = conn.cursor()
 
