@@ -900,6 +900,8 @@ def nuevo_torneo():
 
 @app.route("/admin/payments")
 def admin_payments():
+    if not is_admin():
+        return redirect("/admin/login")
     conn = get_db()
     cursor = conn.cursor()
 
