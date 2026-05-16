@@ -1121,7 +1121,7 @@ GROUP BY p.user
 
     for u, pts in fix_manual_fecha.items():
         pts_fecha[u] = pts_fecha.get(u, 0) + pts
-    # ----------------
+    # -----------------------------------
     tabla_fecha = sorted(pts_fecha.items(), key=lambda x: -x[1])
 
     top3_fecha = tabla_fecha[:3]
@@ -1155,7 +1155,30 @@ GROUP BY p.user
         is_admin=is_admin()
     )
 from datetime import datetime, timedelta
+@app.route("/fix_scores")
+def fix_scores():
 
+    conn = get_db()
+    cursor = conn.cursor()
+
+    fixes = {
+        "mariano": 3,
+        "rafael": 1,
+        "seba silva": 1
+    }
+
+    for u, pts in fixes.items():
+
+        cursor.execute("""
+            UPDATE scores
+            SET puntos = puntos + ?
+            WHERE user = ?
+        """, (pts, u))
+
+    conn.commit()
+    conn.close()
+
+    return "OK"
 def now_uy():
     return datetime.utcnow() - timedelta(hours=3)
 # =========================
