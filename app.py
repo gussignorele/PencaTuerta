@@ -931,6 +931,45 @@ def admin_payments():
                            pagos=pagos,
                            fechas=fechas,
                            fecha_actual=fecha)
+
+
+@app.route("/debug_matches")
+def debug_matches():
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            id,
+            local,
+            visitante,
+            fecha_num,
+            fecha_hora,
+            goles_local,
+            goles_visitante
+        FROM matches
+        ORDER BY fecha_num, fecha_hora
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    html = ""
+
+    for r in rows:
+        html += f"""
+        <div style='margin-bottom:12px'>
+            id={r[0]} |
+            {r[1]} vs {r[2]} |
+            fecha={r[3]} |
+            hora={r[4]} |
+            goles={r[5]}-{r[6]}
+        </div>
+        """
+
+    return html
 # =========================
 # RANKING
 # =========================
