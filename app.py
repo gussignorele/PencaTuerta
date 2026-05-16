@@ -1139,6 +1139,28 @@ GROUP BY p.user
 
     conn.close()  # 🔥 ahora sí, al final
 
+   
+    ranking = sorted(ranking, key=lambda x: (-x[2], x[0]))
+
+    ranking_with_pos = []
+
+    last_pts = None
+    current_pos = 0
+
+    for index, (username, avatar, pts) in enumerate(ranking):
+
+        if pts != last_pts:
+            current_pos = index + 1
+
+        ranking_with_pos.append(
+            (current_pos, username, avatar, pts)
+        )
+
+        last_pts = pts
+
+    ranking = ranking_with_pos
+
+
     return render_template(
         "ranking.html",
         ranking=ranking,
@@ -1154,6 +1176,9 @@ GROUP BY p.user
         resto_fecha=resto_fecha,
         is_admin=is_admin()
     )
+
+
+
 from datetime import datetime, timedelta
 
 
