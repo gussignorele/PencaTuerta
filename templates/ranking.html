@@ -38,7 +38,7 @@
         <div style="margin-top:8px;">
             {% for pos, u, pts in resto_fecha %}
             <div style="display:flex; justify-content:space-between; padding:3px 0;">
-                <div>{{pos}}. {{u}}</div>
+                <div> {% if pos == 1 %} 🥇 {% elif pos == 2 %} 🥈 {% elif pos == 3 %} 🥉 {% else %} {{pos}}. {% endif %} {{u}} </div>
                 <div>{{pts}} pts</div>
             </div>
             {% endfor %}
