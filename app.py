@@ -471,6 +471,23 @@ def user_detail(username):
             oculto = True
 
         pts = calcular_puntos(gl, gv, pl, pv) if gl is not None else None
+       
+        # 🔥 fix temporal partido eliminado
+        if (
+                fecha_sel == 1
+                and local == "Nacional"
+                and visitante == "Torque"
+        ):
+
+            if username == "mariano":
+                pts = (pts or 0) + 3
+
+            elif username == "rafael":
+                pts = (pts or 0) + 1
+
+            elif username == "seba silva":
+                pts = (pts or 0) + 1
+
 
         rows_con_puntos.append(
             (local, visitante, gl, gv, pl, pv, pts, oculto)
