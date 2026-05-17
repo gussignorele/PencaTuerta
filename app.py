@@ -1122,10 +1122,37 @@ GROUP BY p.user
     for u, pts in fix_manual_fecha.items():
         pts_fecha[u] = pts_fecha.get(u, 0) + pts
     # -----------------------------------
+    """
     tabla_fecha = sorted(pts_fecha.items(), key=lambda x: -x[1])
 
     top3_fecha = tabla_fecha[:3]
     resto_fecha = tabla_fecha[3:]
+    """
+
+    tabla_fecha = sorted(
+        pts_fecha.items(),
+        key=lambda x: (-x[1], x[0])
+    )
+
+    tabla_fecha_pos = []
+
+    last_pts = None
+    current_pos = 0
+
+    for user, pts in tabla_fecha:
+
+        if pts != last_pts:
+            current_pos += 1
+
+        tabla_fecha_pos.append(
+            (current_pos, user, pts)
+        )
+
+        last_pts = pts
+
+    top3_fecha = tabla_fecha_pos[:3]
+    resto_fecha = tabla_fecha_pos[3:]
+
 
     ganador_fecha = None
 
@@ -1389,6 +1416,26 @@ def admin_results():
 
         #recalcular_ranking()
         recalcular_ranking(conn)
+
+        # 🔥 fix temporal partido eliminado
+        fixes = {
+            "mariano": 3,
+            "rafael": 1,
+            "seba silva": 1
+        }
+
+        cursor = conn.cursor()
+
+        for u, pts in fixes.items():
+            cursor.execute("""
+                UPDATE scores
+                SET puntos = puntos + ?
+                WHERE user = ?
+            """, (pts, u))
+
+        conn.commit()
+
+
         conn.commit()
 
     # 🔥 lista de fechas

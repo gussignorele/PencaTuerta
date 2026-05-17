@@ -19,13 +19,10 @@
         {% endif %}
     </div>
 
-    {% for u, pts in top3_fecha %}
+    {% for pos, u, pts in top3_fecha %}
     <div style="display:flex; justify-content:space-between; padding:4px 0;">
         <div>
-            {% if loop.index == 1 %}🥇
-            {% elif loop.index == 2 %}🥈
-            {% elif loop.index == 3 %}🥉
-            {% endif %}
+{% if pos == 1 %}🥇 {% elif pos == 2 %}🥈 {% elif pos == 3 %}🥉 {% endif %}
             <b>{{u}}</b>
         </div>
         <div><b>{{pts}} pts</b></div>
@@ -39,9 +36,9 @@
         </summary>
 
         <div style="margin-top:8px;">
-            {% for u, pts in resto_fecha %}
+            {% for pos, u, pts in resto_fecha %}
             <div style="display:flex; justify-content:space-between; padding:3px 0;">
-                <div>{{loop.index + 3}}. {{u}}</div>
+                <div>{{pos}}. {{u}}</div>
                 <div>{{pts}} pts</div>
             </div>
             {% endfor %}
