@@ -12,20 +12,47 @@
     background:#6c3bb8;
     padding:15px;
     border-radius:10px;
-    margin-bottom:12px;
+    margin-bottom:14px;
 ">
 
-    <div style="font-size:18px; font-weight:bold;">
+    <div style="
+        font-size:22px;
+        font-weight:bold;
+        margin-bottom:12px;
+    ">
         📅 Fecha {{h.fecha}}
     </div>
 
-    <div style="margin-top:8px;">
-        🏆
-        {% for g in h.ganadores %}
-            <b>{{g}}</b>{% if not loop.last %}, {% endif %}
-        {% endfor %}
-        — {{h.puntos}} pts
+    {% for pos, user, pts in h.tabla %}
+
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        margin-bottom:6px;
+        font-size:17px;
+    ">
+
+        <div>
+            {% if pos == 1 %}
+                🥇
+            {% elif pos == 2 %}
+                🥈
+            {% elif pos == 3 %}
+                🥉
+            {% else %}
+                {{pos}}°
+            {% endif %}
+
+            {{user}}
+        </div>
+
+        <div>
+            <b>{{pts}}</b> pts
+        </div>
+
     </div>
+
+    {% endfor %}
 
 </div>
 
