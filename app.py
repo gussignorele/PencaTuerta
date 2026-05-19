@@ -1089,24 +1089,49 @@ def history():
               AND m.goles_local IS NOT NULL
               AND m.goles_visitante IS NOT NULL
             GROUP BY p.user
-            ORDER BY pts DESC
         """, (fecha,))
 
-        rows = cursor.fetchall()
+        tabla = {
+            u: pts for u, pts in cursor.fetchall()
+        }
 
-        if rows:
-            max_pts = rows[0][1]
+        # 🔥 fix fecha 1
+        if fecha == 1:
 
-            ganadores = [
-                r[0] for r in rows
-                if r[1] == max_pts
-            ]
+            fix_manual_fecha = {
+                "mariano": 3,
+                "rafael": 1,
+                "seba silva": 1
+            }
 
-            history.append({
-                "fecha": fecha,
-                "ganadores": ganadores,
-                "puntos": max_pts
-            })
+            for u, pts in fix_manual_fecha.items():
+                tabla[u] = tabla.get(u, 0) + pts
+
+        tabla = sorted(
+            tabla.items(),
+            key=lambda x: (-x[1], x[0])
+        )
+
+        tabla_pos = []
+
+        last_pts = None
+        current_pos = 0
+
+        for user, pts in tabla:
+
+            if pts != last_pts:
+                current_pos += 1
+
+            tabla_pos.append(
+                (current_pos, user, pts)
+            )
+
+            last_pts = pts
+
+        history.append({
+            "fecha": fecha,
+            "tabla": tabla_pos
+        })
 
     conn.close()
 
