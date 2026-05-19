@@ -10,52 +10,90 @@
 
 <div style="
     background:#6c3bb8;
-    padding:15px;
-    border-radius:10px;
+    border-radius:12px;
     margin-bottom:14px;
+    overflow:hidden;
 ">
 
-    <div style="
-        font-size:22px;
-        font-weight:bold;
-        margin-bottom:12px;
-    ">
-        📅 Fecha {{h.fecha}}
-    </div>
-
-    {% for pos, user, pts in h.tabla %}
-
-    <div style="
-        display:flex;
-        justify-content:space-between;
-        margin-bottom:6px;
-        font-size:17px;
-    ">
+    <!-- header -->
+    <div onclick="toggleFecha('fecha{{h.fecha}}')"
+         style="
+            padding:16px;
+            cursor:pointer;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            font-size:22px;
+            font-weight:bold;
+         ">
 
         <div>
-            {% if pos == 1 %}
-                🥇
-            {% elif pos == 2 %}
-                🥈
-            {% elif pos == 3 %}
-                🥉
-            {% else %}
-                {{pos}}°
-            {% endif %}
-
-            {{user}}
+            Fecha {{h.fecha}}
         </div>
 
-        <div>
-            <b>{{pts}}</b> pts
+        <div id="iconfecha{{h.fecha}}">
+            ➕
         </div>
 
     </div>
 
-    {% endfor %}
+    <!-- contenido -->
+    <div id="fecha{{h.fecha}}" style="
+        display:none;
+        padding:0 16px 16px 16px;
+    ">
+
+        {% for pos, user, pts in h.tabla %}
+
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            margin-bottom:8px;
+            font-size:17px;
+        ">
+
+            <div>
+                {% if pos == 1 %}
+                    🥇
+                {% elif pos == 2 %}
+                    🥈
+                {% elif pos == 3 %}
+                    🥉
+                {% else %}
+                    {{pos}}°
+                {% endif %}
+
+                {{user}}
+            </div>
+
+            <div>
+                <b>{{pts}}</b> pts
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
 
 </div>
 
 {% endfor %}
+
+<script>
+function toggleFecha(id) {
+
+    const div = document.getElementById(id);
+    const icon = document.getElementById("icon" + id);
+
+    if (div.style.display === "none") {
+        div.style.display = "block";
+        icon.innerHTML = "➖";
+    } else {
+        div.style.display = "none";
+        icon.innerHTML = "➕";
+    }
+}
+</script>
 
 {% endblock %}
