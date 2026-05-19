@@ -744,9 +744,11 @@ def reset_torneo():
 # =========================
 # MATCHES
 # =========================
+
 @app.route("/matches")
 @app.route("/matches/<int:fecha_sel>")
 def matches(fecha_sel=None):
+
     if "user" not in session:
         return redirect("/")
 
@@ -755,49 +757,35 @@ def matches(fecha_sel=None):
     conn = get_db()
     cursor = conn.cursor()
 
-    # 🔥 fecha actual = última fecha que ya empezó
+    # 🔥 por defecto mostrar la última fecha cargada
     cursor.execute("""
-        SELECT fecha_num
+        SELECT MAX(fecha_num)
         FROM matches
-        WHERE datetime(fecha_hora) <= datetime(?)
-        ORDER BY fecha_num DESC
-        LIMIT 1
-    """, (now_uy().isoformat(),))
+    """)
 
-    row = cursor.fetchone()
+    fecha_actual = cursor.fetchone()[0]
 
-    if row:
-        fecha_actual = row[0]
-    else:
+    # 🔥 si viene una fecha específica por URL
+    if fecha_sel:
+        fecha_actual = fecha_sel
+
+    # 🔥 por seguridad
+    if fecha_actual is None:
         cursor.execute("""
             SELECT MIN(fecha_num)
             FROM matches
         """)
         fecha_actual = cursor.fetchone()[0]
 
-    if fecha_sel:
-        fecha_actual = fecha_sel
+    # 🔥 límites navegación
+    cursor.execute("""
+        SELECT MIN(fecha_num), MAX(fecha_num)
+        FROM matches
+    """)
 
-    if fecha_actual is None:
-        cursor.execute("SELECT MAX(fecha_num) FROM matches")
-        fecha_actual = cursor.fetchone()[0]
-
-    cursor.execute("SELECT MIN(fecha_num), MAX(fecha_num) FROM matches")
     min_fecha, max_fecha = cursor.fetchone()
 
-
-    #cursor.execute("""
-    #    SELECT MIN(fecha_num)
-    #    FROM matches
-    #    WHERE fecha_hora > ?
-    #""", (now_uy().isoformat(),))
-
-    #futura = cursor.fetchone()[0]
-    #
-    #fecha_max_permitida = futura if futura else fecha_actual
-    #if futura and fecha_actual > futura:
-    #    fecha_actual = futura
-
+    # 🔥 partidos
     cursor.execute("""
         SELECT m.*, p.pred_local, p.pred_visitante
         FROM matches m
@@ -810,11 +798,17 @@ def matches(fecha_sel=None):
     matches_data = cursor.fetchall()
 
     conn.close()
+
     now = now_uy().isoformat()
+
     pago_ok = pago_habilitado(user, fecha_actual)
+
     payments_enabled = PAYMENTS_ENABLED
+
     is_admin_user = user in ADMINS
+
     fecha_max_permitida = max_fecha
+
     return render_template(
         "matches.html",
         matches=matches_data,
@@ -830,7 +824,7 @@ def matches(fecha_sel=None):
         is_admin_user=is_admin_user,
         price=PRICE_PER_FECHA
     )
-
+# -------------------------------------
 @app.route("/admin/reset_scores", methods=["POST"])
 def reset_scores():
     if not is_admin():
