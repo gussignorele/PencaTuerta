@@ -1,186 +1,190 @@
-{% extends "base.html" %}
+    {% extends "base.html" %}
 
-{% block content %}
-
-<h2 style="margin-bottom:15px;">Ranking 🏆</h2>
-    <div style="
-    background:#4a1f6b;
-    padding:12px;
-    border-radius:10px;
-    margin-bottom:15px;
-">
-
-    <div style="text-align:center; font-weight:bold; margin-bottom:8px;">
-        🏆 Fecha {{fecha_sel}}
-        {% if fecha_estado == "Finalizada" %}
-            🟢
-        {% else %}
-            🟡
-        {% endif %}
+    {% block content %}
+    <div style="text-align:center; margin-bottom:15px;">
+        <a href="/history" style="color:white;">
+            📚 Histórico por fecha
+        </a>
     </div>
+    <h2 style="margin-bottom:15px;">Ranking 🏆</h2>
+        <div style="
+        background:#4a1f6b;
+        padding:12px;
+        border-radius:10px;
+        margin-bottom:15px;
+    ">
 
-    {% for pos, u, pts in top3_fecha %}
-    <div style="display:flex; justify-content:space-between; padding:4px 0;">
-        <div>
-{% if pos == 1 %}🥇 {% elif pos == 2 %}🥈 {% elif pos == 3 %}🥉 {% endif %}
-            <b>{{u}}</b>
+        <div style="text-align:center; font-weight:bold; margin-bottom:8px;">
+            🏆 Fecha {{fecha_sel}}
+            {% if "Finalizada" in fecha_estado %}
+                🟢
+            {% else %}
+                🟡
+            {% endif %}
         </div>
-        <div><b>{{pts}} pts</b></div>
-    </div>
-    {% endfor %}
 
-    {% if resto_fecha %}
-    <details style="margin-top:8px;">
-        <summary style="cursor:pointer; text-align:center;">
-            ▼ Ver resto
-        </summary>
-
-        <div style="margin-top:8px;">
-            {% for pos, u, pts in resto_fecha %}
-            <div style="display:flex; justify-content:space-between; padding:3px 0;">
-                <div> {% if pos == 1 %} 🥇 {% elif pos == 2 %} 🥈 {% elif pos == 3 %} 🥉 {% else %} {{pos}}. {% endif %} {{u}} </div>
-                <div>{{pts}} pts</div>
+        {% for pos, u, pts in top3_fecha %}
+        <div style="display:flex; justify-content:space-between; padding:4px 0;">
+            <div>
+    {% if pos == 1 %}🥇 {% elif pos == 2 %}🥈 {% elif pos == 3 %}🥉 {% endif %}
+                <b>{{u}}</b>
             </div>
+            <div><b>{{pts}} pts</b></div>
+        </div>
+        {% endfor %}
+
+        {% if resto_fecha %}
+        <details style="margin-top:8px;">
+            <summary style="cursor:pointer; text-align:center;">
+                ▼ Ver resto
+            </summary>
+
+            <div style="margin-top:8px;">
+                {% for pos, u, pts in resto_fecha %}
+                <div style="display:flex; justify-content:space-between; padding:3px 0;">
+                    <div> {% if pos == 1 %} 🥇 {% elif pos == 2 %} 🥈 {% elif pos == 3 %} 🥉 {% else %} {{pos}}. {% endif %} {{u}} </div>
+                    <div>{{pts}} pts</div>
+                </div>
+                {% endfor %}
+            </div>
+        </details>
+        {% endif %}
+
+    </div>
+
+    <div style="text-align:center; margin-bottom:10px;">
+        <h3>📅 Fecha {{fecha_sel}}</h3>
+        <div style="font-size:13px; color:#ccc;">
+            Estado:
+           {% if "Finalizada" in fecha_estado %}
+                🟢 {{fecha_estado}}
+            {% else %}
+                🟡 {{fecha_estado}}
+            {% endif %}
+        </div>
+
+        {% if ganador_fecha %}
+        <div style="margin-top:5px;">
+            🏆 Ganador:
+            {% for g in ganador_fecha %}
+                <b>{{g}}</b>{% if not loop.last %}, {% endif %}
             {% endfor %}
         </div>
-    </details>
-    {% endif %}
-
-</div>
-
-<div style="text-align:center; margin-bottom:10px;">
-    <h3>📅 Fecha {{fecha_sel}}</h3>
-    <div style="font-size:13px; color:#ccc;">
-        Estado:
-        {% if fecha_estado == "Finalizada" %}
-            🟢 {{fecha_estado}}
-        {% else %}
-            🟡 {{fecha_estado}}
         {% endif %}
     </div>
 
-    {% if ganador_fecha %}
-    <div style="margin-top:5px;">
-        🏆 Ganador:
-        {% for g in ganador_fecha %}
-            <b>{{g}}</b>{% if not loop.last %}, {% endif %}
-        {% endfor %}
+    <div style="
+        font-size:12px;
+        color:#ccc;
+        margin-bottom:10px;
+        text-align:center;
+    ">
+        👉 Clickeá en un usuario para ver sus predicciones
+    </div>
+
+    {% if not fecha_jugada %}
+    <div style="
+        text-align:center;
+        font-size:12px;
+        color:#ccc;
+        margin-bottom:10px;
+    ">
+        🔒 Las predicciones de otros usuarios se habilitan al finalizar la fecha
     </div>
     {% endif %}
-</div>
 
-<div style="
-    font-size:12px;
-    color:#ccc;
-    margin-bottom:10px;
-    text-align:center;
-">
-    👉 Clickeá en un usuario para ver sus predicciones
-</div>
+    {% for pos, user, avatar, pts in ranking %}
+        <div class="{% if user == current_user or fecha_jugada or is_admin %}unlock{% endif %}"
+             style="
+                padding:15px;
+                border-radius:10px;
+                margin-bottom:10px;
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
 
-{% if not fecha_jugada %}
-<div style="
-    text-align:center;
-    font-size:12px;
-    color:#ccc;
-    margin-bottom:10px;
-">
-    🔒 Las predicciones de otros usuarios se habilitan al finalizar la fecha
-</div>
-{% endif %}
-
-{% for pos, user, avatar, pts in ranking %}
-    <div class="{% if user == current_user or fecha_jugada or is_admin %}unlock{% endif %}"
-         style="
-            padding:15px;
-            border-radius:10px;
-            margin-bottom:10px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-
-            {% if user == current_user %}
-                background:#7c4dff;
-            {% else %}
-                background:#6c3bb8;
-            {% endif %}
-         ">
-
-        {% if user == current_user or fecha_jugada or is_admin %}
-        <a href="/user/{{user}}" style="
-            display:flex;
-            align-items:center;
-            gap:12px;
-            color:white;
-            text-decoration:none;
-            font-size:16px;
-            font-weight:bold;
-            flex:1;
-            padding:5px;
-            border-radius:8px;
-            transition: all 0.2s ease;
-            min-width:0;
-        "
-        onmouseover="this.style.background='#7c4dff'"
-        onmouseout="this.style.background='transparent'"
-        >
-        {% else %}
-        <div style="
-            display:flex;
-            align-items:center;
-            gap:12px;
-            color:#bbb;
-            font-size:16px;
-            font-weight:bold;
-            flex:1;
-            padding:5px;
-            min-width:0;
-        ">
-        {% endif %}
-
-            <!-- medalla -->
-            <div style="font-size:20px; width:30px;"> {% if pos == 1 %} 🥇 {% elif pos == 2 %} 🥈 {% elif pos == 3 %} 🥉 {% else %} {{pos}}. {% endif %} </div>
-
-
-            <!-- avatar (FIX COMPLETO) -->
-            <img src="{{ avatar if avatar.startswith('/') else '/static/img/' + avatar }}"
-                 style="
-                    width:40px;
-                    height:40px;
-                    object-fit:cover;
-                    border-radius:50%;
-                    flex-shrink:0;
-                 ">
-
-            <!-- usuario (FIX SCROLL) -->
-            <div title="{{user}}" style="
-                overflow:hidden;
-                text-overflow:ellipsis;
-                white-space:nowrap;
-                max-width:140px;
-            ">
-                {{user}}
-                {% if user != current_user and not fecha_jugada %}
-                    <span style="font-size:12px;">🔒</span>
+                {% if user == current_user %}
+                    background:#7c4dff;
+                {% else %}
+                    background:#6c3bb8;
                 {% endif %}
+             ">
+
+            {% if user == current_user or fecha_jugada or is_admin %}
+            <a href="/user/{{user}}" style="
+                display:flex;
+                align-items:center;
+                gap:12px;
+                color:white;
+                text-decoration:none;
+                font-size:16px;
+                font-weight:bold;
+                flex:1;
+                padding:5px;
+                border-radius:8px;
+                transition: all 0.2s ease;
+                min-width:0;
+            "
+            onmouseover="this.style.background='#7c4dff'"
+            onmouseout="this.style.background='transparent'"
+            >
+            {% else %}
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:12px;
+                color:#bbb;
+                font-size:16px;
+                font-weight:bold;
+                flex:1;
+                padding:5px;
+                min-width:0;
+            ">
+            {% endif %}
+
+                <!-- medalla -->
+                <div style="font-size:20px; width:30px;"> {% if pos == 1 %} 🥇 {% elif pos == 2 %} 🥈 {% elif pos == 3 %} 🥉 {% else %} {{pos}}. {% endif %} </div>
+
+
+                <!-- avatar (FIX COMPLETO) -->
+                <img src="{{ avatar if avatar.startswith('/') else '/static/img/' + avatar }}"
+                     style="
+                        width:40px;
+                        height:40px;
+                        object-fit:cover;
+                        border-radius:50%;
+                        flex-shrink:0;
+                     ">
+
+                <!-- usuario (FIX SCROLL) -->
+                <div title="{{user}}" style="
+                    overflow:hidden;
+                    text-overflow:ellipsis;
+                    white-space:nowrap;
+                    max-width:140px;
+                ">
+                    {{user}}
+                    {% if user != current_user and not fecha_jugada %}
+                        <span style="font-size:12px;">🔒</span>
+                    {% endif %}
+                </div>
+
+           {% if user == current_user or fecha_jugada or is_admin %}
+            </a>
+            {% else %}
+            </div>
+            {% endif %}
+
+            <!-- DERECHA -->
+            <div style="text-align:right; flex-shrink:0;">
+                <div><b>{{pts}} pts</b></div>
+                <div style="font-size:12px; color:#ddd;">
+                    Fecha: {{ pts_fecha.get(user, 0) }} pts
+                </div>
             </div>
 
-       {% if user == current_user or fecha_jugada or is_admin %}
-        </a>
-        {% else %}
-        </div>
-        {% endif %}
-
-        <!-- DERECHA -->
-        <div style="text-align:right; flex-shrink:0;">
-            <div><b>{{pts}} pts</b></div>
-            <div style="font-size:12px; color:#ddd;">
-                Fecha: {{ pts_fecha.get(user, 0) }} pts
-            </div>
         </div>
 
-    </div>
+    {% endfor %}
 
-{% endfor %}
-
-{% endblock %}
+    {% endblock %}

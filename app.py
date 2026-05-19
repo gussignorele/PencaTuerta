@@ -729,6 +729,7 @@ def reset_torneo():
     cursor.execute("DELETE FROM matches")
     cursor.execute("DELETE FROM payments")
     cursor.execute("UPDATE scores SET puntos = 0")
+    cursor.execute("DELETE FROM fecha_history")
 
     recalcular_ranking(conn)
 
@@ -1017,6 +1018,34 @@ def debug_matches():
         """
 
     return html
+
+
+@app.route("/admin/create_history_table")
+def create_history_table():
+
+    if not is_admin():
+        return redirect("/")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fecha_history (
+            fecha_num INTEGER,
+            user TEXT,
+            puntos INTEGER,
+            posicion INTEGER,
+            created_at TEXT
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+    return "OK"
+
+
+
 # =========================
 # RANKING
 # =========================
@@ -1046,16 +1075,6 @@ def ranking():
     now = now_uy()
 
     # 🔹 saber si la fecha global terminó (lo que ya tenías)
-    cursor.execute("SELECT MAX(fecha_hora) FROM matches")
-    ultima_fecha = cursor.fetchone()[0]
-
-    fecha_jugada = False
-    if ultima_fecha:
-        try:
-            fecha_dt = datetime.fromisoformat(ultima_fecha).replace(tzinfo=None)
-            fecha_jugada = now > fecha_dt
-        except:
-            pass
 
     # 🔹 fecha seleccionada
     fecha_sel = request.args.get("fecha", type=int)
@@ -1081,22 +1100,37 @@ def ranking():
             """)
             fecha_sel = cursor.fetchone()[0]
 
-    # 🔹 estado de la fecha
+    # 🔹 saber si la fecha seleccionada terminó
+
     cursor.execute("""
-        SELECT MAX(fecha_hora)
+        SELECT COUNT(*)
         FROM matches
         WHERE fecha_num = ?
+          AND (
+              goles_local IS NULL
+              OR goles_visitante IS NULL
+          )
     """, (fecha_sel,))
-    fecha_max = cursor.fetchone()[0]
 
-    fecha_estado = "En juego"
-    if fecha_max:
-        try:
-            fecha_dt = datetime.fromisoformat(fecha_max).replace(tzinfo=None)
-            if now > fecha_dt:
-                fecha_estado = "Finalizada"
-        except:
-            pass
+    pendientes_fecha = cursor.fetchone()[0]
+
+    fecha_jugada = pendientes_fecha == 0
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM matches
+        WHERE fecha_num = ?
+          AND (
+              goles_local IS NULL
+              OR goles_visitante IS NULL
+          )
+    """, (fecha_sel,))
+
+    pendientes = cursor.fetchone()[0]
+
+    if pendientes == 0:
+        fecha_estado = "Finalizada"
+    else:
+        fecha_estado = f"En juego · {pendientes} pendiente(s)"
 
     # 🔹 puntos por fecha
     pts_fecha = {}   # 🔥 IMPORTANTE (evita crash)
