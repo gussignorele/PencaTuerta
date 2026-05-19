@@ -1044,7 +1044,76 @@ def create_history_table():
 
     return "OK"
 
+@app.route("/history")
+def history():
 
+    if "user" not in session:
+        return redirect("/")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT DISTINCT fecha_num
+        FROM matches
+        ORDER BY fecha_num DESC
+    """)
+
+    fechas = [f[0] for f in cursor.fetchall()]
+
+    history = []
+
+    for fecha in fechas:
+
+        cursor.execute("""
+            SELECT p.user,
+                   SUM(
+                       CASE
+                           WHEN m.goles_local = p.pred_local
+                            AND m.goles_visitante = p.pred_visitante
+                               THEN 3
+
+                           WHEN (
+                               (m.goles_local > m.goles_visitante AND p.pred_local > p.pred_visitante)
+                            OR (m.goles_local < m.goles_visitante AND p.pred_local < p.pred_visitante)
+                            OR (m.goles_local = m.goles_visitante AND p.pred_local = p.pred_visitante)
+                           )
+                               THEN 1
+
+                           ELSE 0
+                       END
+                   ) pts
+            FROM prediction p
+            JOIN matches m ON p.match_id = m.id
+            WHERE m.fecha_num = ?
+              AND m.goles_local IS NOT NULL
+              AND m.goles_visitante IS NOT NULL
+            GROUP BY p.user
+            ORDER BY pts DESC
+        """, (fecha,))
+
+        rows = cursor.fetchall()
+
+        if rows:
+            max_pts = rows[0][1]
+
+            ganadores = [
+                r[0] for r in rows
+                if r[1] == max_pts
+            ]
+
+            history.append({
+                "fecha": fecha,
+                "ganadores": ganadores,
+                "puntos": max_pts
+            })
+
+    conn.close()
+
+    return render_template(
+        "history.html",
+        history=history
+    )
 
 # =========================
 # RANKING
