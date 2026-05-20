@@ -1509,9 +1509,40 @@ def admin_matches():
         fecha_num_sel=fecha_num_sel
     )
 
-# =========================
-# ADMIN RESULTS
-# =========================
+@app.route("/admin/edit_match_date/<int:match_id>", methods=["POST"])
+def edit_match_date(match_id):
+
+    if not is_admin():
+        return redirect("/admin/login")
+
+    nueva_fecha = request.form["fecha"]
+    nueva_hora = request.form["hora"]
+
+    nueva_dt = datetime.fromisoformat(f"{nueva_fecha}T{nueva_hora}")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE matches
+        SET fecha_hora = ?
+        WHERE id = ?
+    """, (nueva_dt.isoformat(), match_id))
+
+    conn.commit()
+
+    # volver a la fecha correcta
+    cursor.execute("""
+        SELECT fecha_num
+        FROM matches
+        WHERE id = ?
+    """, (match_id,))
+
+    fecha_num = cursor.fetchone()[0]
+
+    conn.close()
+
+    return redirect(f"/admin/matches?fecha_num={fecha_num}")
 # =========================
 # ADMIN RESULTS
 # =========================

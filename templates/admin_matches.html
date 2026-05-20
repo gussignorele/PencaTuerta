@@ -3,32 +3,38 @@
 {% block content %}
 
 <h2>Cargar partidos</h2>
-<a href="/admin/results">→ Ir a cargar resultados</a>
+
+<a href="/admin/results">
+    → Ir a cargar resultados
+</a>
 
 <!-- 1. SELECCIONAR FECHA -->
 
 <form method="get" style="margin-bottom:15px;">
+
     <input type="number"
            name="fecha_num"
            placeholder="Fecha (1,2,3...)"
            value="{{fecha_num_sel if fecha_num_sel else ''}}"
            required
-           style="width:100%; padding:10px; box-sizing:border-box;">
+           style="
+                width:100%;
+                padding:10px;
+                box-sizing:border-box;
+           ">
 
- 
-<button type="submit" style="
-    width:100%;
-    margin-top:10px;
-    padding:10px;
-    border:none;
-    border-radius:5px;
-    background:white;
-    color:#5a2a83;
-    font-weight:bold;
-">
-    Seleccionar fecha
-</button>
- 
+    <button type="submit" style="
+        width:100%;
+        margin-top:10px;
+        padding:10px;
+        border:none;
+        border-radius:5px;
+        background:white;
+        color:#5a2a83;
+        font-weight:bold;
+    ">
+        Seleccionar fecha
+    </button>
 
 </form>
 
@@ -43,106 +49,213 @@
 {% if matches %}
 
 <div style="margin-bottom:15px;">
-    <div style="font-size:13px; margin-bottom:6px; color:#ddd;">
+
+    <div style="
+        font-size:13px;
+        margin-bottom:6px;
+        color:#ddd;
+    ">
         Partidos cargados:
     </div>
 
- 
-{% for p in matches %}
-<div style="
-    background:#4a1f6b;
-    padding:10px;
-    border-radius:6px;
-    margin-bottom:8px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-">
-    <div>
-        {{ p["local"] }} vs {{ p["visitante"] }}
+    {% for p in matches %}
+
+    <div style="
+        background:#4a1f6b;
+        padding:10px;
+        border-radius:6px;
+        margin-bottom:8px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+    ">
+
+        <!-- equipos -->
+        <div>
+            {{ p["local"] }} vs {{ p["visitante"] }}
+        </div>
+
+        <!-- acciones -->
+        <div style="
+            display:flex;
+            align-items:center;
+            gap:8px;
+            flex-wrap:wrap;
+        ">
+
+            <!-- hora -->
+            <span style="color:#ccc;">
+                {{ p["fecha_hora"][11:16] if p["fecha_hora"] else '' }}
+            </span>
+
+            <!-- editar fecha -->
+            <form action="/admin/edit_match_date/{{ p['id'] }}"
+                  method="post"
+                  style="
+                    display:flex;
+                    align-items:center;
+                    gap:4px;
+                    margin:0;
+                  ">
+
+                <input type="date"
+                       name="fecha"
+                       value="{{ p['fecha_hora'][:10] }}"
+                       required
+                       style="
+                            padding:4px;
+                            font-size:11px;
+                       ">
+
+                <input type="time"
+                       name="hora"
+                       value="{{ p['fecha_hora'][11:16] }}"
+                       required
+                       style="
+                            padding:4px;
+                            font-size:11px;
+                       ">
+
+                <button type="submit" style="
+                    background:#2563eb;
+                    color:white;
+                    border:none;
+                    padding:4px 6px;
+                    border-radius:4px;
+                    cursor:pointer;
+                ">
+                    ✏️
+                </button>
+
+            </form>
+
+            <!-- borrar -->
+            <form action="/admin/delete_match/{{ p['id'] }}"
+                  method="post"
+                  style="margin:0;">
+
+                <button type="submit" style="
+                    background:#ff4d4d;
+                    color:white;
+                    border:none;
+                    padding:4px 8px;
+                    border-radius:4px;
+                    cursor:pointer;
+                ">
+                    ❌
+                </button>
+
+            </form>
+
+        </div>
+
     </div>
 
-    <div style="display:flex; align-items:center; gap:10px;">
-        <span style="color:#ccc;">
-            {{ p["fecha_hora"][11:16] if p["fecha_hora"] else '' }}
-        </span>
-
-        <form action="/admin/delete_match/{{ p['id'] }}" method="post" style="margin:0;">
-            <button type="submit" style="
-                background:#ff4d4d;
-                color:white;
-                border:none;
-                padding:4px 8px;
-                border-radius:4px;
-                cursor:pointer;
-            ">
-                ❌
-            </button>
-        </form>
-    </div>
-</div>
-{% endfor %}
- 
+    {% endfor %}
 
 </div>
+
 {% endif %}
 
 <!-- 2. CARGAR PARTIDO -->
 
 <form method="post">
 
- 
-<input type="hidden" name="fecha_num" value="{{fecha_num_sel}}">
+    <input type="hidden"
+           name="fecha_num"
+           value="{{fecha_num_sel}}">
 
-<!-- LOCAL -->
-<select name="local" id="local" style="width:100%; padding:10px; margin-bottom:10px;">
-    {% for equipo in equipos %}
-        <option value="{{equipo}}">{{equipo}}</option>
-    {% endfor %}
-</select>
+    <!-- LOCAL -->
+    <select name="local"
+            id="local"
+            style="
+                width:100%;
+                padding:10px;
+                margin-bottom:10px;
+            ">
 
-<!-- VISITANTE -->
-<select name="visitante" id="visitante" style="width:100%; padding:10px; margin-bottom:10px;">
-    {% for equipo in equipos %}
-        <option value="{{equipo}}">{{equipo}}</option>
-    {% endfor %}
-</select>
+        {% for equipo in equipos %}
+            <option value="{{equipo}}">
+                {{equipo}}
+            </option>
+        {% endfor %}
 
-<!-- FECHA -->
-<input type="date"
-       name="fecha"
-       required
-       style="width:100%; padding:10px; margin-bottom:10px; box-sizing:border-box;">
+    </select>
 
-<!-- HORA -->
-<select name="hora"
-        style="width:100%; padding:10px; margin-bottom:10px;">
+    <!-- VISITANTE -->
+    <select name="visitante"
+            id="visitante"
+            style="
+                width:100%;
+                padding:10px;
+                margin-bottom:10px;
+            ">
 
-    {% for h in range(9, 22) %}
-        <option value="{{ "%02d:00"|format(h) }}">{{ "%02d:00"|format(h) }}</option>
-        <option value="{{ "%02d:30"|format(h) }}">{{ "%02d:30"|format(h) }}</option>
-    {% endfor %}
+        {% for equipo in equipos %}
+            <option value="{{equipo}}">
+                {{equipo}}
+            </option>
+        {% endfor %}
 
-</select>
+    </select>
 
-<button type="submit" onclick="return validarSubmit()" style="
-    width:100%;
-    padding:10px;
-    border:none;
-    border-radius:5px;
-    background:white;
-    color:#5a2a83;
-    font-weight:bold;
-">
-    Agregar partido
-</button>
- 
+    <!-- FECHA -->
+    <input type="date"
+           name="fecha"
+           required
+           style="
+                width:100%;
+                padding:10px;
+                margin-bottom:10px;
+                box-sizing:border-box;
+           ">
+
+    <!-- HORA -->
+    <select name="hora"
+            style="
+                width:100%;
+                padding:10px;
+                margin-bottom:10px;
+            ">
+
+        {% for h in range(9, 22) %}
+
+            <option value="{{ "%02d:00"|format(h) }}">
+                {{ "%02d:00"|format(h) }}
+            </option>
+
+            <option value="{{ "%02d:30"|format(h) }}">
+                {{ "%02d:30"|format(h) }}
+            </option>
+
+        {% endfor %}
+
+    </select>
+
+    <button type="submit"
+            onclick="return validarSubmit()"
+            style="
+                width:100%;
+                padding:10px;
+                border:none;
+                border-radius:5px;
+                background:white;
+                color:#5a2a83;
+                font-weight:bold;
+            ">
+
+        Agregar partido
+
+    </button>
 
 </form>
 
 {% else %}
 
-<div style="text-align:center; margin-top:30px;">
+<div style="
+    text-align:center;
+    margin-top:30px;
+">
     Elegí una fecha para comenzar
 </div>
 
@@ -150,22 +263,28 @@
 
 <hr>
 
-<a href="/matches" style="color:white;">Volver</a>
+<a href="/matches" style="color:white;">
+    Volver
+</a>
 
 <!-- VALIDACION -->
 
 <script>
+
 function validarSubmit() {
+
     const local = document.getElementById("local").value;
     const visitante = document.getElementById("visitante").value;
 
     if (local === visitante) {
+
         alert("Elegí equipos distintos");
         return false;
     }
 
     return true;
 }
+
 </script>
 
 {% endblock %}
