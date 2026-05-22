@@ -938,32 +938,13 @@ def nuevo_torneo():
 def admin_payments():
     if not is_admin():
         return redirect("/admin/login")
+
     conn = get_db()
     cursor = conn.cursor()
 
     fecha = request.args.get("fecha")
 
-    if fecha:
-        cursor.execute("""
-            SELECT p.user, p.fecha_num, p.status, u.telefono, u.email
-            FROM payments p
-            LEFT JOIN users u ON p.user = u.username
-            WHERE p.fecha_num = ?
-            ORDER BY p.fecha_num DESC
-        """, (fecha,))
-    else:
-        cursor.execute("""
-            SELECT p.user, p.fecha_num, p.status, u.telefono, u.email
-            FROM payments p
-            LEFT JOIN users u ON p.user = u.username
-            ORDER BY p.fecha_num DESC
-        """)
-
-    pagos = cursor.fetchall()
-
-    # 🔥 fechas disponibles (dinámico, sirve aunque resetees)
-
-    # 🔥 fechas del torneo actual
+    # fechas válidas del torneo actual
     cursor.execute("""
         SELECT DISTINCT fecha_num
         FROM matches
@@ -971,14 +952,38 @@ def admin_payments():
     """)
 
     fechas = [f[0] for f in cursor.fetchall()]
+
+    # si no eligió nada, usar la última fecha
     if not fecha and fechas:
         fecha = str(fechas[0])
+
+    # recién ahora consultar pagos
+    if fecha:
+        cursor.execute("""
+            SELECT p.user, p.fecha_num, p.status, u.telefono, u.email
+            FROM payments p
+            LEFT JOIN users u ON p.user = u.username
+            WHERE p.fecha_num = ?
+            ORDER BY p.user
+        """, (fecha,))
+    else:
+        cursor.execute("""
+            SELECT p.user, p.fecha_num, p.status, u.telefono, u.email
+            FROM payments p
+            LEFT JOIN users u ON p.user = u.username
+            ORDER BY p.user
+        """)
+
+    pagos = cursor.fetchall()
+
     conn.close()
 
-    return render_template("admin_payments.html",
-                           pagos=pagos,
-                           fechas=fechas,
-                           fecha_actual=fecha)
+    return render_template(
+        "admin_payments.html",
+        pagos=pagos,
+        fechas=fechas,
+        fecha_actual=fecha
+    )
 
 
 @app.route("/debug_matches")
