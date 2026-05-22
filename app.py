@@ -962,7 +962,14 @@ def admin_payments():
     pagos = cursor.fetchall()
 
     # 🔥 fechas disponibles (dinámico, sirve aunque resetees)
-    cursor.execute("SELECT DISTINCT fecha_num FROM payments ORDER BY fecha_num DESC")
+
+    # 🔥 fechas del torneo actual
+    cursor.execute("""
+        SELECT DISTINCT fecha_num
+        FROM matches
+        ORDER BY fecha_num DESC
+    """)
+
     fechas = [f[0] for f in cursor.fetchall()]
 
     conn.close()
