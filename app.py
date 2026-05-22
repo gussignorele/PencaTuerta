@@ -971,7 +971,8 @@ def admin_payments():
     """)
 
     fechas = [f[0] for f in cursor.fetchall()]
-
+    if not fecha and fechas:
+        fecha = str(fechas[0])
     conn.close()
 
     return render_template("admin_payments.html",
