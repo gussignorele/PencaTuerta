@@ -546,6 +546,7 @@ def index():
 
         print("LOGIN USER:", username)
         print("DB USER:", user)
+        print("ROW:", tuple(user))
 
         conn.close()
 
