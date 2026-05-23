@@ -23,15 +23,35 @@
             {% endif %}
         </div>
 
-        {% for pos, u, pts in top3_fecha %}
-        <div style="display:flex; justify-content:space-between; padding:4px 0;">
-            <div>
-    {% if pos == 1 %}🥇 {% elif pos == 2 %}🥈 {% elif pos == 3 %}🥉 {% endif %}
-                <b>{{u}}</b>
-            </div>
-            <div><b>{{pts}} pts</b></div>
-        </div>
-        {% endfor %}
+{% for pos, u, pts in top3_fecha %}
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:4px 0;
+    gap:10px;
+">
+
+    <div title="{{u}}" style="
+        flex:1;
+        min-width:0;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    ">
+        {% if pos == 1 %}🥇
+        {% elif pos == 2 %}🥈
+        {% elif pos == 3 %}🥉
+        {% endif %}
+        <b>{{u}}</b>
+    </div>
+
+    <div style="flex-shrink:0;">
+        <b>{{pts}} pts</b>
+    </div>
+
+</div>
+{% endfor %}
 
         {% if resto_fecha %}
         <details style="margin-top:8px;">
