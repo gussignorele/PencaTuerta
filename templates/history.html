@@ -45,32 +45,42 @@
 
         {% for pos, user, pts in h.tabla %}
 
-        <div style="
-            display:flex;
-            justify-content:space-between;
-            margin-bottom:8px;
-            font-size:17px;
-        ">
+ <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+    font-size:17px;
+">
 
-            <div>
-                {% if pos == 1 %}
-                    🥇
-                {% elif pos == 2 %}
-                    🥈
-                {% elif pos == 3 %}
-                    🥉
-                {% else %}
-                    {{pos}}°
-                {% endif %}
+    <div title="{{user}}" style="
+        flex:1;
+        min-width:0;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    ">
+        {% if pos == 1 %}
+            🥇
+        {% elif pos == 2 %}
+            🥈
+        {% elif pos == 3 %}
+            🥉
+        {% else %}
+            {{pos}}°
+        {% endif %}
 
-                {{user}}
-            </div>
+        {{user}}
+    </div>
 
-            <div>
-                <b>{{pts}}</b> pts
-            </div>
+    <div style="
+        flex-shrink:0;
+    ">
+        <b>{{pts}}</b> pts
+    </div>
 
-        </div>
+</div>
 
         {% endfor %}
 
