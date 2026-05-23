@@ -1307,10 +1307,11 @@ GROUP BY p.user
         "rafael": 1,
         "seba silva": 1
     }
-    """
+    
 
     for u, pts in fix_manual_fecha.items():
         pts_fecha[u] = pts_fecha.get(u, 0) + pts
+    """
     # -----------------------------------
     """
     tabla_fecha = sorted(pts_fecha.items(), key=lambda x: -x[1])
