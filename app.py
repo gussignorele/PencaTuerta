@@ -524,9 +524,11 @@ def user_detail(username):
 # =========================
 # LOGIN
 # =========================
+
 @app.route("/", methods=["GET", "POST"])
 @limiter.limit("10 per minute")
 def index():
+
     if request.method == "POST":
 
         username = request.form["username"].strip().lower()
@@ -541,24 +543,32 @@ def index():
         conn = get_db()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+        cursor.execute(
+            "SELECT * FROM users WHERE username=?",
+            (username,)
+        )
+
         user = cursor.fetchone()
 
         print("LOGIN USER:", username)
         print("DB USER:", user)
-        print("ROW:", tuple(user))
-
-        conn.close()
 
         if user:
-            print("HASH[1]:", user[1])
+            print("ROW:", tuple(user))
+            print("HASH[2]:", user[2])
 
             try:
-                print("PASSWORD OK:", check_password_hash(user[1], password))
+                print(
+                    "PASSWORD OK:",
+                    check_password_hash(user[2], password)
+                )
             except Exception as e:
                 print("ERROR CHECK HASH:", e)
 
-        if user and check_password_hash(user[1], password):
+        conn.close()
+
+        if user and check_password_hash(user[2], password):
+
             session["user"] = username
             session["is_admin"] = False
 
@@ -572,6 +582,9 @@ def index():
         return redirect("/")
 
     return render_template("index.html")
+
+
+
 
 from flask import jsonify
 from flask_limiter.errors import RateLimitExceeded
