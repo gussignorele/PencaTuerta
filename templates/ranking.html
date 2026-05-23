@@ -156,18 +156,19 @@
                         flex-shrink:0;
                      ">
 
-                <!-- usuario (FIX SCROLL) -->
-                <div title="{{user}}" style="
-                    overflow:hidden;
-                    text-overflow:ellipsis;
-                    white-space:nowrap;
-                    max-width:140px;
-                ">
-                    {{user}}
-                    {% if user != current_user and not fecha_jugada %}
-                        <span style="font-size:12px;">🔒</span>
-                    {% endif %}
-                </div>
+<div title="{{user}}" style="
+    flex:1;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    padding-right:8px;
+">
+    {{user}}
+    {% if user != current_user and not fecha_jugada %}
+        <span style="font-size:12px;">🔒</span>
+    {% endif %}
+</div>
 
            {% if user == current_user or fecha_jugada or is_admin %}
             </a>
