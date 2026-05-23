@@ -358,6 +358,7 @@ def fix_points():
     conn.close()
 
     return "OK"
+
 @app.route("/admin/reset_user_password", methods=["GET", "POST"])
 def admin_reset_user_password():
 
@@ -527,13 +528,13 @@ def user_detail(username):
 @limiter.limit("10 per minute")
 def index():
     if request.method == "POST":
+
         username = request.form["username"].strip().lower()
         password = request.form["password"]
 
-
         import re
 
-        if not re.match(r"^[a-z0-9_]{3,20}$", username):
+        if not re.match(r"^[a-z0-9_ ]{3,30}$", username):
             flash("Usuario o contraseña incorrectos", "error")
             return redirect("/")
 
@@ -543,9 +544,20 @@ def index():
         cursor.execute("SELECT * FROM users WHERE username=?", (username,))
         user = cursor.fetchone()
 
+        print("LOGIN USER:", username)
+        print("DB USER:", user)
+
         conn.close()
 
-        if user and check_password_hash(user[2], password):
+        if user:
+            print("HASH[1]:", user[1])
+
+            try:
+                print("PASSWORD OK:", check_password_hash(user[1], password))
+            except Exception as e:
+                print("ERROR CHECK HASH:", e)
+
+        if user and check_password_hash(user[1], password):
             session["user"] = username
             session["is_admin"] = False
 
