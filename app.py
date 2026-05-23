@@ -7,11 +7,23 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from lib import calcular_puntos, logos, recalcular_ranking
 from datetime import datetime
 from PIL import Image
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import requests
 import io
 app = Flask(__name__)
-app.secret_key = "super-secret-key-key"
+#app.secret_key = "super-secret-key-key"
+app.secret_key = os.getenv("SECRET_KEY", "dev-key")
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024
 
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=[]
+)
 DB_PATH = "/data/database.db" if os.path.exists("/data") else "database.db"
 
 if os.path.exists("/data"):
@@ -512,10 +524,18 @@ def user_detail(username):
 # LOGIN
 # =========================
 @app.route("/", methods=["GET", "POST"])
+@limiter.limit("10 per minute")
 def index():
     if request.method == "POST":
         username = request.form["username"].strip().lower()
         password = request.form["password"]
+
+
+        import re
+
+        if not re.match(r"^[a-z0-9_]{3,20}$", username):
+            flash("Usuario o contraseña incorrectos", "error")
+            return redirect("/")
 
         conn = get_db()
         cursor = conn.cursor()
@@ -539,6 +559,13 @@ def index():
         return redirect("/")
 
     return render_template("index.html")
+
+from flask import jsonify
+from flask_limiter.errors import RateLimitExceeded
+
+@app.errorhandler(RateLimitExceeded)
+def ratelimit_handler(e):
+    return "Demasiados intentos. Esperá un minuto.", 429
 
 
 # =========================
@@ -570,6 +597,11 @@ def admin_login():
 def register():
     if request.method == "POST":
         username = request.form["username"].strip().lower()
+        import re
+
+        if not re.match(r"^[a-z0-9_]{3,20}$", username):
+            flash("Usuario inválido", "error")
+            return redirect("/register")
         password = request.form["password"]
         if len(password) < 8:
             flash("La contraseña debe tener al menos 8 caracteres", "error")
@@ -578,6 +610,10 @@ def register():
 
         telefono = request.form.get("telefono")
         email = request.form.get("email")
+        if "@" not in email:
+            flash("Email inválido", "error")
+            return redirect("/register")
+
         if not email:
             flash("Email requerido", "error")
             return redirect("/register")
@@ -1265,11 +1301,13 @@ GROUP BY p.user
     pts_fecha = {u: pts for u, pts in cursor.fetchall()}
 
     # 🔥 fix temporal partido eliminado
+    """
     fix_manual_fecha = {
         "mariano": 3,
         "rafael": 1,
         "seba silva": 1
     }
+    """
 
     for u, pts in fix_manual_fecha.items():
         pts_fecha[u] = pts_fecha.get(u, 0) + pts
