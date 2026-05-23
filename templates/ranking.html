@@ -40,12 +40,38 @@
             </summary>
 
             <div style="margin-top:8px;">
-                {% for pos, u, pts in resto_fecha %}
-                <div style="display:flex; justify-content:space-between; padding:3px 0;">
-                    <div> {% if pos == 1 %} 🥇 {% elif pos == 2 %} 🥈 {% elif pos == 3 %} 🥉 {% else %} {{pos}}. {% endif %} {{u}} </div>
-                    <div>{{pts}} pts</div>
-                </div>
-                {% endfor %}
+{% for pos, u, pts in resto_fecha %}
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:3px 0;
+    gap:10px;
+">
+
+    <div style="
+        flex:1;
+        min-width:0;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+    ">
+        {% if pos == 1 %}🥇
+        {% elif pos == 2 %}🥈
+        {% elif pos == 3 %}🥉
+        {% else %}{{pos}}.
+        {% endif %}
+        {{u}}
+    </div>
+
+    <div style="
+        flex-shrink:0;
+    ">
+        {{pts}} pts
+    </div>
+
+</div>
+{% endfor %}
             </div>
         </details>
         {% endif %}
