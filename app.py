@@ -536,7 +536,7 @@ def index():
 
         import re
 
-        if not re.match(r"^[a-z0-9_ ]{3,30}$", username):
+        if not re.match(r"^[a-z0-9_ @.-]{3,80}$", username):
             flash("Usuario o contraseña incorrectos", "error")
             return redirect("/")
 
